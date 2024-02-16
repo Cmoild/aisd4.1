@@ -1,13 +1,18 @@
 from PIL import Image
 import numpy as np
 
-def MakeRawRGBImage(link: str):
+def MakeRawRGBImage(link: str, channels: int):
     img = np.asarray(Image.open(link)).copy()
     f = open('RawImage.txt', 'w', encoding='utf-8')
-    for i in range(len(img)):
-        for j in range(len(img[0])):
-            for k in range(3):
-                f.write(chr(int(img[i][j][k])))
+    if (channels == 3):
+        for i in range(len(img)):
+            for j in range(len(img[0])):
+                for k in range(3):
+                    f.write(chr(int(img[i][j][k])))
+    else:
+        for i in range(len(img)):
+            for j in range(len(img[0])):
+                f.write(chr(int(img[i][j])))
 
 def CompressRGBImage():
     rd = open('RawImage.txt', 'r', encoding='utf-8')
@@ -39,7 +44,7 @@ def CompressRGBImage():
                 wr.write(sumstr[:3])
             n += len(sumstr)//3
 
-def ShowCompressedRGB(x: int, y: int):
+def ShowCompressed(x: int, y: int, channels: int):
     comp = []
     i = 0
     rd = open('CompressedImage.txt', 'r', encoding='utf-8')
@@ -48,12 +53,19 @@ def ShowCompressedRGB(x: int, y: int):
         st = ''
         st += rd.read(1)
         if (st == ''):
-            break
-        if (ord(st[0]) < 256):
-            st = chr(1 + 256) + st + rd.read(2)
+                break
+        if (channels == 3):
+            if (ord(st[0]) < 256):
+                st = chr(1 + 256) + st + rd.read(2)
+            else:
+                st += rd.read(3)
+            comp.append([ord(st[0])-256, ord(st[1]), ord(st[2]), ord(st[3])])
         else:
-            st += rd.read(3)
-        comp.append([ord(st[0])-256, ord(st[1]), ord(st[2]), ord(st[3])])
+            if (ord(st[0]) < 256):
+                st = chr(1 + 256) + st
+            else:
+                st += rd.read(1)
+            comp.append([ord(st[0])-256, ord(st[1]), ord(st[1]), ord(st[1])])
 
     img = []
     
@@ -68,17 +80,128 @@ def ShowCompressedRGB(x: int, y: int):
     img = np.array(new_img).astype(np.uint8)
     Image.fromarray(img).show()
 
+def CompressWBImage():
+    rd = open('RawImage.txt', 'r', encoding='utf-8')
+    wr = open('CompressedImage.txt', 'w', encoding='utf-8')
+    sumstr = ''
+    n = 0
+    s = ''
+    while True:
+        st = ''
+        st = rd.read(1)
+        if (st == ''):
+            break
+        s += st
+    for i in range(0, len(s)):
+        run = s[i]
+        if (sumstr == '' or sumstr[0] == run):
+            sumstr += run
+        else:
+            if (len(sumstr) > 1):
+                wr.write(chr(len(sumstr) + 256) + sumstr[0])
+            else:
+                wr.write(sumstr[0])
+            n += len(sumstr)
+            sumstr = run
+        if (i == len(s) - 1):
+            if (len(sumstr) > 1):
+                wr.write(chr(len(sumstr) + 256) + sumstr[0])
+            else:
+                wr.write(sumstr[0])
+            n += len(sumstr)
+
+def CompressText(link: str, enc: str):
+    rd = open(link, 'r', encoding=enc)
+    wr = open('CompressedText.txt', 'w', encoding='utf-8')
+    fl = ''
+    j = 0
+    sumstr = ''
+    while True:
+        st = ''
+        st = rd.read(1)
+        if (j % 50000 == 0):
+            print(st)
+        if (st == ''):
+            break
+        j += 1
+        fl += st
+    for i in range(len(fl)):
+        if (i % 50000 == 0):
+            print(int((i/len(fl)) * 100))
+        if (sumstr == '' or sumstr[0] == fl[i]):
+            sumstr += fl[i]
+        else:
+            if(len(sumstr) > 2):
+                wr.write(chr(len(sumstr) + 16) + '\x00' + sumstr[0])
+            else:
+                wr.write(sumstr)
+            sumstr = fl[i]
+        if (i == len(fl) - 1):
+            if(len(sumstr) > 2):
+                wr.write(chr(len(sumstr) + 16) + '\x00' + sumstr[0])
+            else:
+                wr.write(sumstr)
+
+def DecompressText():
+    rd = open('CompressedText.txt', 'r', encoding='utf-8')
+    wr = open('DecompressedText.txt', 'w', encoding='utf-8')
+    fl = ''
+    j = 0
+    sumstr = ''
+    while True:
+        st = ''
+        st = rd.read(1)
+        if (j % 50000 == 0):
+            print(st)
+        if (st == ''):
+            break
+        j += 1
+        fl += st
+    i = 0
+    while i < len(fl) - 1:
+        if (i % 50000 == 0):
+            print(int((i/len(fl)) * 100))
+        if (fl[i+1] != '\x00'):
+            wr.write(fl[i])
+            i += 1
+        else:
+            wr.write((ord(fl[i]) - 16) * fl[i+2])
+            i += 3
+    wr.write(fl[len(fl) - 1])
+    
+def IsEqual():
+    com = open('текст.txt', 'r', encoding='ansi')
+    dec = open('DecompressedText.txt', 'r', encoding='utf-8')
+    j = 0
+    while True:
+        st = ''
+        std = ''
+        st = com.read(1)
+        std = dec.read(1)
+        if (not st == std):
+            print(j)
+            print(ord(st), ord(std))
+            break
+        if (st == ''):
+            break
+        j += 1
 
 
-
-#MakeRawRGBImage('IMG_20210730_111202.jpg')
-#MakeRawRGBImage('Cat03.jpg')
-MakeRawRGBImage('lowresRGB.jpg')
+#MakeRawRGBImage('IMG_20210730_111202.jpg', 3)
+#MakeRawRGBImage('Cat03.jpg', 3)
+#MakeRawRGBImage('lowresRGB.jpg', 3)
+#MakeRawRGBImage('istockphoto-1337005456-612x612.jpg', 1)
+#MakeRawRGBImage('Без имени.jpg', 3)
 #print(1)
-CompressRGBImage()
+#CompressRGBImage()
+#CompressWBImage()
 #print(2)
-#ShowCompressedRGB(3472, 4624)
-ShowCompressedRGB(144, 144)
-#ShowCompressedRGB(1024, 1025)
+#ShowCompressed(3472, 4624,3)
+#ShowCompressed(144, 144,3)
+#ShowCompressed(1024, 1025,3)
+#ShowCompressed(321, 612,1)
+#ShowCompressed(256, 256,3)
 
-#компресс корректный? тогда обратный алгоритм
+CompressText('текст.txt', 'ansi')
+DecompressText()
+IsEqual()
