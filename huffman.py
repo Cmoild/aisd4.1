@@ -45,6 +45,16 @@ def EncodeHuffman(data : str, alph : list):
         ret += code
     return HexToChar(BinaryToHex(ret))
 
-#abc = [chr(c) for c in range(0, 128)]
-#print(HuffmanCodes('_CF☺F☻♥F♥☻F☺☺☺♦☺☻☻☺♣♦☺♣☻☻☺♦☺♦☺☺', abc))
-#print(len(EncodeHuffman('_CF☺F☻♥F♥☻F☺☺☺♦☺☻☻☺♣♦☺♣☻☻☺♦☺♦☺☺', abc)))
+def CanonicalHuffmanCodes(codes: list):
+    ret = []
+    for i in codes:
+        ret.append([i[0], len(i[2])])
+    ret.sort(key = lambda x: x[0])
+    ret.sort(key = lambda x: x[1])
+    ret[0].append('0')
+    for i in range(1, len(ret)):
+        num = int(ret[i-1][2], 2)
+        num += 1
+        ret[i].append('')
+        ret[i][2] = bin(num)[2:] + (ret[i][1] - len(bin(num)[2:])) * '0'
+    return ret

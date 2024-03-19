@@ -1,5 +1,8 @@
 #include <stdio.h>
 #include <string.h>
+#include <wchar.h>
+#include <stdlib.h>
+#include <locale.h>
 
 #define MAX_LEN 100
 #define RANGE 256
@@ -23,13 +26,10 @@ void counting_sort(char arr[][MAX_LEN], int n, int exp) {
         strcpy(arr[i], output[i]);
 }
 
-void radix_sort(char** a, int n) {
-    char arr[n][MAX_LEN];
-    for (int i = 0; i < n; i++){
-        strcpy(arr[i], *(a + i));
-        printf("%s\n", a[i]);
-    }
+char** radix_sort(/*char a[][MAX_LEN], */int n) {
     int max_len = 0;
+    char arr[][MAX_LEN] = {"apple", "banana", "apricot", "date", "fig", "grape"};
+
     for (int i = 0; i < n; i++) {
         int len = strlen(arr[i]);
         if (len > max_len)
@@ -38,30 +38,46 @@ void radix_sort(char** a, int n) {
 
     for (int exp = max_len - 1; exp >= 0; exp--)
         counting_sort(arr, n, exp);
-    /*
+
+    char** ret = (char**)malloc(sizeof(char*) * n);
     for (int i = 0; i < n; i++){
-        for (int j = 0; j < strlen(arr[i]); j++){
-            printf("%c", arr[i][j]);
-        }
-        printf("\n");
+        ret[i] = (char*)malloc(sizeof(char) * MAX_LEN);
+        strcpy(ret[i], arr[i]);
     }
-    */
+    return ret;
 }
-
-int square(int a, int b){
-    return a * b;
-}
-
+/*
 int main() {
-    char** arr = {"apple", "banana", "cherry", "date", "fig", "grape"};
+    //wchar_t* arr = {L"apple", L"banana", L"слон", L"date", L"fig", L"grape"};
+    char b[][MAX_LEN] = {"apple", "banana", "apricot", "date", "fig", "grape"};
+    char** arr = (char**)malloc(sizeof(char*) * 6);
+    for (int i = 0; i < 6; i++){
+        arr[i] = (char*)malloc(sizeof(char) * 100);
+    }
+    
+    char** arr = (char**)malloc(sizeof(char*) * 6);
+    for (int i = 0; i < 6; i++){
+        arr[i] = (char*)malloc(sizeof(char) * 100);
+        arr[i] = b[i];
+    }
+    //arr = b;
     int n = 6;
     printf("%d\n", n);
-    radix_sort(arr, n);
-    printf("%d\n", n);
-    for (int i = 0; i < n; i++)
-        //printf("%s\n", arr[i]);
-
+    system("pause");
+    //setlocale(LC_ALL, "C.UTF-8");
+    //printf("%d\n", n);
+    //radix_sort(arr, n);
+    //printf("%d\n", n);
+    for (int i = 0; i < n; i++){
+        printf("%s\n", arr[i]);
+    }
+    
+    arr = radix_sort(b, 6);
+    for (int i = 0; i < 6; i++){
+        printf("%s\n", arr[i]);
+    }
     system("pause");
     return 0;
 
 }
+*/

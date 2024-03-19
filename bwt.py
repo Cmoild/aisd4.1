@@ -8,7 +8,9 @@ def BWT(data):
     return transformed_data, ind
 
 def inverse_BWT(data, ind):
+    
     L = [(data[i], i) for i in range(len(data))]
+    
     L.sort()
     s = ''
     P = list(zip(*L))[1]
