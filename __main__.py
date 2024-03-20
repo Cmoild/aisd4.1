@@ -4,7 +4,6 @@ import mtf
 
 alph = [chr(c) for c in range(0, 256)]
 
-s = 'aaaaaaaaaabcccccccccccccccddddddd'
+s = '^BANANA$'
 
-print(huffman.CanonicalHuffmanCodes(huffman.HuffmanCodes(s, alph)))
-
+print(bwt.BWT(s))

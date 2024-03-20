@@ -1,0 +1,2 @@
+gcc -fPIC -shared -o mylib.so mylib.c
+gcc mylib.c -o mylib.exe
