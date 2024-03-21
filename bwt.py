@@ -26,7 +26,7 @@ def inverse_BWT(data, ind):
 
 def RadixSort(strings: list):
     from ctypes import CDLL, c_wchar_p, POINTER
-    lib = CDLL("C:\\Users\\cold1\\vscpr\\aisd\\aisd4.1\\mylib.so")
+    lib = CDLL("C:\\Users\\Никита\\VSCprojects\\aisd4.1\\mylib.so")
     c_arr = (c_wchar_p * len(strings))()
     c_arr[:] = strings
     lib.radix_sort.restype = POINTER(c_wchar_p)
