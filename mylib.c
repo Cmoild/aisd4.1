@@ -4,10 +4,10 @@
 #include <stdlib.h>
 //#pragma warning(disable : 4996)
 
-#define MAX_LEN 100
-#define RANGE 256
+#define MAX_LEN 10000
+#define RANGE WCHAR_MAX
 
-static void counting_sort(wchar_t** arr, int n, int exp) {
+void counting_sort(wchar_t** arr, int n, int exp) {
     wchar_t** output = (wchar_t**)malloc(n * sizeof(wchar_t*));
     for (int i = 0; i < n; i++){
         output[i] = (wchar_t*)malloc(MAX_LEN * sizeof(wchar_t));
@@ -35,7 +35,7 @@ static void counting_sort(wchar_t** arr, int n, int exp) {
     free(output);
 }
 
-static wchar_t** radix_sort(wchar_t** arr, int n) {
+wchar_t** radix_sort(wchar_t** arr, int n) {
     int max_len = 0;
 
     for (int i = 0; i < n; i++) {
@@ -60,23 +60,36 @@ wchar_t** example(wchar_t** arr, int n){
     }
     return arr;
 }
+
+int cmp_str(const void* a, const void* b){
+    const wchar_t* p1 = *(wchar_t**)a;
+    const wchar_t* p2 = *(wchar_t**)b;
+    return wcscmp(p1, p2);
+}
+
+wchar_t** sort(wchar_t** arr, int n){
+    qsort(arr, n, sizeof(wchar_t*), cmp_str);
+    return arr;
+}
 /*
 int main(void) {
-    wchar_t arr[][MAX_LEN] = {L"ccc", L"aaaa", L"bbb", L"aaa", L"aab", L"abc"};
+    wchar_t arr[][MAX_LEN] = {L"BANANA", L"ANANAB", L"NANABA", L"ANABAN", L"NABANA", L"ABANAN"};
     wchar_t** arr2 = (wchar_t**)malloc(6 * sizeof(wchar_t*));
-    
+    wchar_t** arr3;
     for (int i = 0; i < 6; i++){
         arr2[i] = (wchar_t*)malloc(MAX_LEN * sizeof(wchar_t));
         wcscpy(arr2[i], arr[i]);
     }
     
-    radix_sort(arr2, 6);
+    //arr3 = radix_sort(arr2, 6);
+    sort(arr2, 6);
     for (int i = 0; i < 6; i++){
         printf("%ls\n", arr2[i]);
     }
 
     for (int i = 0; i < 6; i++) {
         free(arr2[i]);
+        
     }
     free(arr2);
     return 0;
