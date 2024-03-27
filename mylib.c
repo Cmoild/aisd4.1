@@ -71,27 +71,61 @@ wchar_t** sort(wchar_t** arr, int n){
     qsort(arr, n, sizeof(wchar_t*), cmp_str);
     return arr;
 }
-/*
-int main(void) {
-    wchar_t arr[][MAX_LEN] = {L"BANANA", L"ANANAB", L"NANABA", L"ANABAN", L"NABANA", L"ABANAN"};
-    wchar_t** arr2 = (wchar_t**)malloc(6 * sizeof(wchar_t*));
-    wchar_t** arr3;
-    for (int i = 0; i < 6; i++){
-        arr2[i] = (wchar_t*)malloc(MAX_LEN * sizeof(wchar_t));
-        wcscpy(arr2[i], arr[i]);
-    }
-    
-    //arr3 = radix_sort(arr2, 6);
-    sort(arr2, 6);
-    for (int i = 0; i < 6; i++){
-        printf("%ls\n", arr2[i]);
+
+struct lz77_tuple{
+    int offset;
+    int length;
+    wchar_t symbol;
+};
+
+typedef struct lz77_tuple lz77_tuple;
+
+#define SEARCH_BUFFER_SIZE 5
+#define LOOKAHEAD_BUFFER_SIZE 10
+
+lz77_tuple* lz77_encode(wchar_t* str) {
+    lz77_tuple* out = (lz77_tuple*)malloc((wcslen(str)) * sizeof(lz77_tuple));
+    //lz77_tuple out[11];
+    //for (int i = 0; i < wcslen(str); i++) out[i] = (lz77_tuple){0, 0, str[i]};
+    int pos = 0;
+    printf("%d\n", sizeof(lz77_tuple));
+    int string_len = wcslen(str);
+    int buf = 0;
+    int offset = 0, length = 0;
+    while (pos < string_len){
+        for (int i = 0, j = 0; (j < SEARCH_BUFFER_SIZE) && (i > 0); i--, j++){
+            int curlen = 0;
+            offset = 0;
+            if (str[pos] == str[pos - i]){
+                offset = pos - i;
+                for (int k = 0; (k < j) && (pos + k < string_len); k++){
+                    if (str[pos + k] == str[pos - i + k]){
+                        curlen++;
+                    }
+                    else break;
+                }
+                if (curlen > length){
+                    length = curlen;
+                    offset = pos - i;
+                }
+                printf("%d\n", curlen);
+            }
+        }
+
+        out[buf] = (lz77_tuple){offset, length, str[pos]};
+        pos = length + pos + 1;
+        buf++;
     }
 
-    for (int i = 0; i < 6; i++) {
-        free(arr2[i]);
-        
+    for (int i = 0; i < wcslen(str); i++) {
+        printf("%c %d %d\n", out[i].symbol, out[i].offset, out[i].length);
     }
-    free(arr2);
-    return 0;
+    //free(out);
+    return out;
 }
-*/
+
+
+int main(void) {
+    wchar_t* str = L"abracadabra";
+    lz77_encode(str);
+}
