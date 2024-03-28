@@ -85,26 +85,28 @@ typedef struct lz77_tuple lz77_tuple;
 
 lz77_tuple* lz77_encode(wchar_t* str) {
     lz77_tuple* out = (lz77_tuple*)malloc((wcslen(str)) * sizeof(lz77_tuple));
+    wchar_t buffer[SEARCH_BUFFER_SIZE];
+    int cur_buffer_size = 0;
     //lz77_tuple out[11];
     //for (int i = 0; i < wcslen(str); i++) out[i] = (lz77_tuple){0, 0, str[i]};
     int pos = 0;
-    printf("%d\n", sizeof(lz77_tuple));
+    //printf("%d\n", sizeof(lz77_tuple));
     int string_len = wcslen(str);
     int buf = 0;
     int offset = 0, length = 0;
-    while (pos < string_len){
-        for (int i = 0, j = 0; (j < SEARCH_BUFFER_SIZE) && (i > 0); i--, j++){
+    while (pos < string_len) {
+        for (int i = pos, j = 0; (j < SEARCH_BUFFER_SIZE) && (i > 0); i--, j++) {
             int curlen = 0;
             offset = 0;
-            if (str[pos] == str[pos - i]){
+            if (str[pos] == str[pos - i]) {
                 offset = pos - i;
-                for (int k = 0; (k < j) && (pos + k < string_len); k++){
-                    if (str[pos + k] == str[pos - i + k]){
+                for (int k = 0; (k < j) && (pos + k < string_len); k++) {
+                    if (str[pos + k] == str[pos - i + k]) {
                         curlen++;
                     }
                     else break;
                 }
-                if (curlen > length){
+                if (curlen > length) {
                     length = curlen;
                     offset = pos - i;
                 }
@@ -112,8 +114,15 @@ lz77_tuple* lz77_encode(wchar_t* str) {
             }
         }
 
-        out[buf] = (lz77_tuple){offset, length, str[pos]};
+        if (cur_buffer_size < SEARCH_BUFFER_SIZE) cur_buffer_size = length + pos + 1;
+
+        out[buf] = (lz77_tuple){ offset, length, str[pos] };
         pos = length + pos + 1;
+
+        for (int i = 0; i < cur_buffer_size; i++) {
+            buffer[i] = str[pos - i];
+        }
+
         buf++;
     }
 
