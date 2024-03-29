@@ -85,52 +85,54 @@ typedef struct lz77_tuple lz77_tuple;
 
 lz77_tuple* lz77_encode(wchar_t* str) {
     lz77_tuple* out = (lz77_tuple*)malloc((wcslen(str)) * sizeof(lz77_tuple));
-    wchar_t buffer[SEARCH_BUFFER_SIZE];
-    int cur_buffer_size = 0;
-    //lz77_tuple out[11];
-    //for (int i = 0; i < wcslen(str); i++) out[i] = (lz77_tuple){0, 0, str[i]};
-    int pos = 0;
-    //printf("%d\n", sizeof(lz77_tuple));
-    int string_len = wcslen(str);
-    int buf = 0;
-    int offset = 0, length = 0;
-    while (pos < string_len) {
-        for (int i = pos, j = 0; (j < SEARCH_BUFFER_SIZE) && (i > 0); i--, j++) {
-            int curlen = 0;
-            offset = 0;
-            if (str[pos] == str[pos - i]) {
-                offset = pos - i;
-                for (int k = 0; (k < j) && (pos + k < string_len); k++) {
-                    if (str[pos + k] == str[pos - i + k]) {
-                        curlen++;
-                    }
-                    else break;
+wchar_t buffer[SEARCH_BUFFER_SIZE];
+int cur_buffer_size = 0;
+int pos = 0;
+int string_len = wcslen(str);
+int buf = 0;
+int offset = 0, length = 0;
+
+while (pos < string_len) {
+    for (int i = 0; i < cur_buffer_size; i++) {
+        printf("%c", buffer[i]);
+    }
+    printf("\n");
+    
+    for (int i = 0; i < cur_buffer_size; i++) {
+        if (str[pos] == buffer[i]) {
+            int cur_len = 0;
+            for (int j = i; (j >= 0) && (pos + i - j < string_len); j--) {
+                //printf("%c", buffer[j]);
+                if (buffer[j] == str[pos + i - j]) {
+                    cur_len++;
                 }
-                if (curlen > length) {
-                    length = curlen;
-                    offset = pos - i;
-                }
-                printf("%d\n", curlen);
+                else break;
             }
+            if (cur_len > length) {
+                length = cur_len;
+                offset = i + 1;
+            }
+            //printf(" %d\n", cur_len);
+
         }
-
-        if (cur_buffer_size < SEARCH_BUFFER_SIZE) cur_buffer_size = length + pos + 1;
-
-        out[buf] = (lz77_tuple){ offset, length, str[pos] };
-        pos = length + pos + 1;
-
-        for (int i = 0; i < cur_buffer_size; i++) {
-            buffer[i] = str[pos - i];
-        }
-
-        buf++;
     }
 
-    for (int i = 0; i < wcslen(str); i++) {
-        printf("%c %d %d\n", out[i].symbol, out[i].offset, out[i].length);
+    if ((cur_buffer_size < SEARCH_BUFFER_SIZE) && (length + pos + 1 <= SEARCH_BUFFER_SIZE)) cur_buffer_size = length + pos + 1;
+    else cur_buffer_size = SEARCH_BUFFER_SIZE;
+
+    out[buf] = (lz77_tuple){ offset, length, str[pos + length] };
+    pos += length + 1;
+    printf("%d %d %c\n", out[buf].offset, out[buf].length, out[buf].symbol);
+    for (int i = 0; i < cur_buffer_size; i++) {
+        buffer[i] = str[pos - i - 1];
     }
-    //free(out);
-    return out;
+
+    buf++;
+    offset = length = 0;
+}
+
+
+return out;
 }
 
 
