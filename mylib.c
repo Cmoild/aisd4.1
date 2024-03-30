@@ -72,7 +72,7 @@ wchar_t** sort(wchar_t** arr, int n){
     return arr;
 }
 
-struct lz77_tuple{
+struct lz77_tuple {
     int offset;
     int length;
     wchar_t symbol;
@@ -80,63 +80,68 @@ struct lz77_tuple{
 
 typedef struct lz77_tuple lz77_tuple;
 
-#define SEARCH_BUFFER_SIZE 5
-#define LOOKAHEAD_BUFFER_SIZE 10
+typedef struct lz77_result {
+    lz77_tuple* result;
+    int numberOfElements;
+} lz77_result;
 
-lz77_tuple* lz77_encode(wchar_t* str) {
+#define SEARCH_BUFFER_SIZE 2048
+
+lz77_result lz77_encode(wchar_t* str) {
     lz77_tuple* out = (lz77_tuple*)malloc((wcslen(str)) * sizeof(lz77_tuple));
-wchar_t buffer[SEARCH_BUFFER_SIZE];
-int cur_buffer_size = 0;
-int pos = 0;
-int string_len = wcslen(str);
-int buf = 0;
-int offset = 0, length = 0;
+    wchar_t buffer[SEARCH_BUFFER_SIZE];
+    int numOfElements = 0;
+    int cur_buffer_size = 0;
+    int pos = 0;
+    int string_len = wcslen(str);
+    int buf = 0;
+    int offset = 0, length = 0;
 
-while (pos < string_len) {
-    for (int i = 0; i < cur_buffer_size; i++) {
-        printf("%c", buffer[i]);
-    }
-    printf("\n");
-    
-    for (int i = 0; i < cur_buffer_size; i++) {
-        if (str[pos] == buffer[i]) {
-            int cur_len = 0;
-            for (int j = i; (j >= 0) && (pos + i - j < string_len); j--) {
-                //printf("%c", buffer[j]);
-                if (buffer[j] == str[pos + i - j]) {
-                    cur_len++;
+    while (pos < string_len) {
+
+        for (int i = 0; i < cur_buffer_size; i++) {
+            if (str[pos] == buffer[i]) {
+                int cur_len = 0;
+                int j = i;
+                while (pos + cur_len < string_len){
+                    //printf("%c", buffer[j]);
+                    if (j >= 0 && buffer[j] == str[pos + cur_len]) {
+                        cur_len++;
+                    }
+                    else if (str[pos + cur_len] == buffer[i]) {
+                        j = i;
+                        cur_len++;
+                    }
+                    else {
+                        break;
+                    }
+                    j--;
                 }
-                else break;
-            }
-            if (cur_len > length) {
-                length = cur_len;
-                offset = i + 1;
-            }
-            //printf(" %d\n", cur_len);
+                if (cur_len > length) {
+                    length = cur_len;
+                    offset = i + 1;
+                }
 
+            }
         }
+
+        if ((cur_buffer_size < SEARCH_BUFFER_SIZE) && (length + pos + 1 <= SEARCH_BUFFER_SIZE)) cur_buffer_size = length + pos + 1;
+        else cur_buffer_size = SEARCH_BUFFER_SIZE;
+
+        out[buf] = (lz77_tuple){ offset, length, str[pos + length] };
+        numOfElements++;
+
+        pos += length + 1;
+
+        for (int i = 0; i < cur_buffer_size; i++) {
+            buffer[i] = str[pos - i - 1];
+        }
+
+        buf++;
+        offset = length = 0;
     }
 
-    if ((cur_buffer_size < SEARCH_BUFFER_SIZE) && (length + pos + 1 <= SEARCH_BUFFER_SIZE)) cur_buffer_size = length + pos + 1;
-    else cur_buffer_size = SEARCH_BUFFER_SIZE;
-
-    out[buf] = (lz77_tuple){ offset, length, str[pos + length] };
-    pos += length + 1;
-    printf("%d %d %c\n", out[buf].offset, out[buf].length, out[buf].symbol);
-    for (int i = 0; i < cur_buffer_size; i++) {
-        buffer[i] = str[pos - i - 1];
-    }
-
-    buf++;
-    offset = length = 0;
-}
-
-
-return out;
-}
-
-
-int main(void) {
-    wchar_t* str = L"abracadabra";
-    lz77_encode(str);
+    lz77_result result = (lz77_result){ out, numOfElements };
+    
+    return result;
 }

@@ -38,9 +38,6 @@ def RadixSort(strings: list):
     #lib.radix_sort(c_arr, len(strings))
     lib.sort.restype = POINTER(c_wchar_p)
     lib.sort(c_arr, len(strings))
-    ret = []
-    for i in range(len(strings)):
-        ret.append(c_arr[i])
-    return ret
+    return [i for i in c_arr]
 
 

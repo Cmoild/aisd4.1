@@ -33,17 +33,19 @@ def HuffmanCodes(data : str, alph : list):
 
 def EncodeHuffman(data : str, alph : list):
     codes = HuffmanCodes(data, alph)
+    set = {}
+    for i in codes:
+        set[i[0]] = i[2]
     #codes.index(value = lambda x: x[0])
     ret = ''
     for i in range(0, len(data)):
         #ret += codes[codes.index(lambda x: x[0] == data[i])][2]
-        code = ''
-        for j in range(0, len(codes)):
-            if (codes[j][0] == data[i]):
-                code = codes[j][2]
-                break
+        code = set[data[i]]
         ret += code
-    return HexToChar(BinaryToHex(ret))
+        if (i % 10000 == 0):
+            print(i)
+    #return HexToChar(BinaryToHex(ret))
+    return ret
 
 def CanonicalHuffmanCodes(codes: list):
     ret = []
