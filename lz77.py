@@ -19,3 +19,13 @@ def LZ77_encode(data: str):
     c_res = lib.lz77_encode(c_data)
     return [(c_res.out[i].offset, c_res.out[i].length, c_res.out[i].symbol) for i in range(c_res.numberOfElements)]
 
+def LZ77_decode(data: list, old_len: int):
+    lib = CDLL(".\mylib.so")
+    c_data = (LZ77_struct * len(data))()
+    for i in range(len(data)):
+        c_data[i].offset = c_int(data[i][0])
+        c_data[i].length = c_int(data[i][1])
+        c_data[i].symbol = c_wchar(data[i][2])
+    lib.lz77_decode.restype = c_wchar_p
+    c_res = lib.lz77_decode(c_data, len(data), old_len)
+    return c_res

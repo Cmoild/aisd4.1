@@ -72,13 +72,11 @@ wchar_t** sort(wchar_t** arr, int n){
     return arr;
 }
 
-struct lz77_tuple {
+typedef struct lz77_tuple {
     int offset;
     int length;
     wchar_t symbol;
-};
-
-typedef struct lz77_tuple lz77_tuple;
+} lz77_tuple;
 
 typedef struct lz77_result {
     lz77_tuple* result;
@@ -108,7 +106,7 @@ lz77_result lz77_encode(wchar_t* str) {
                     if (j >= 0 && buffer[j] == str[pos + cur_len]) {
                         cur_len++;
                     }
-                    else if (str[pos + cur_len] == buffer[i]) {
+                    else if (str[pos + cur_len] == buffer[i] && i - cur_len == -1) {
                         j = i;
                         cur_len++;
                     }
@@ -143,5 +141,21 @@ lz77_result lz77_encode(wchar_t* str) {
 
     lz77_result result = (lz77_result){ out, numOfElements };
     
+    return result;
+}
+
+wchar_t* lz77_decode(lz77_tuple* in, int numOfTuples, int stringLength) {
+    wchar_t* result = (wchar_t*)calloc(stringLength + 1, sizeof(wchar_t));
+    int pos = 0;
+    for (int i = 0; i < numOfTuples; i++) {
+        lz77_tuple cur = in[i];
+        //int curPos = pos - cur.offset;
+        for (int j = 0; j < cur.length; j++) {
+            result[pos] = result[pos - cur.offset];
+            pos++;
+        }
+        result[pos] = cur.symbol;
+        pos++;
+    }
     return result;
 }

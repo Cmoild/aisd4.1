@@ -1,2 +1,3 @@
 gcc -fPIC -shared -o mylib.so mylib.c
+gcc -fPIC -shared -o huffmanlib.so huffmanlib.c
 gcc mylib.c -o mylib.exe

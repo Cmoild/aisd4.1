@@ -44,7 +44,6 @@ def EncodeHuffman(data : str, alph : list):
         ret += code
         if (i % 10000 == 0):
             print(i)
-    #return HexToChar(BinaryToHex(ret))
     return ret
 
 def CanonicalHuffmanCodes(codes: list):
