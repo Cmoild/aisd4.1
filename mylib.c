@@ -2,6 +2,7 @@
 #include <string.h>
 #include <wchar.h>
 #include <stdlib.h>
+#include <math.h>
 //#pragma warning(disable : 4996)
 
 #define MAX_LEN 10000
@@ -73,8 +74,8 @@ wchar_t** sort(wchar_t** arr, int n){
 }
 
 typedef struct lz77_tuple {
-    int offset;
-    int length;
+    unsigned short offset;
+    unsigned short length;
     wchar_t symbol;
 } lz77_tuple;
 
@@ -83,23 +84,24 @@ typedef struct lz77_result {
     int numberOfElements;
 } lz77_result;
 
-#define SEARCH_BUFFER_SIZE 2048
+#define SEARCH_BUFFER_SIZE 16384
+#define LOOK_AHEAD_BUFFER_SIZE 256
 
-lz77_result lz77_encode(wchar_t* str) {
-    lz77_tuple* out = (lz77_tuple*)malloc((wcslen(str)) * sizeof(lz77_tuple));
-    wchar_t buffer[SEARCH_BUFFER_SIZE];
+lz77_result lz77_encode(wchar_t* str, int stringLength) {
+    lz77_tuple* out = (lz77_tuple*)malloc((stringLength + 1) * sizeof(lz77_tuple));
+    wchar_t* buffer = (wchar_t*)calloc(SEARCH_BUFFER_SIZE, sizeof(wchar_t));
     int numOfElements = 0;
     int cur_buffer_size = 0;
     int pos = 0;
-    int string_len = wcslen(str);
+    int string_len = stringLength;
     int buf = 0;
-    int offset = 0, length = 0;
+    unsigned short offset = 0, length = 0;
 
     while (pos < string_len) {
 
         for (int i = 0; i < cur_buffer_size; i++) {
             if (str[pos] == buffer[i]) {
-                int cur_len = 0;
+                unsigned short cur_len = 0;
                 int j = i;
                 while (pos + cur_len < string_len){
                     //printf("%c", buffer[j]);
@@ -113,6 +115,7 @@ lz77_result lz77_encode(wchar_t* str) {
                     else {
                         break;
                     }
+                    if (cur_len == LOOK_AHEAD_BUFFER_SIZE) break;
                     j--;
                 }
                 if (cur_len > length) {
@@ -158,4 +161,100 @@ wchar_t* lz77_decode(lz77_tuple* in, int numOfTuples, int stringLength) {
         pos++;
     }
     return result;
+}
+
+char* decToBinary(int n)
+{
+    unsigned char* binaryNum = (unsigned char*)calloc(9, sizeof(unsigned char));
+    binaryNum[8] = '\0';
+
+    int i = 0;
+    int j = 7;
+    while (j >= 0) {
+        binaryNum[j] = (unsigned char)(n % 2) + '0';
+        n = n / 2;
+        j--;
+        i++;
+    }
+
+    return binaryNum;
+}
+
+int binaryToDec(unsigned char* byteStr) {
+    int res = 0;
+    for (int i = 0; i < 8; i++) {
+        res += ((int)byteStr[7 - i] - '0') * (int)pow(2, i);
+    }
+
+    return res;
+}
+
+void WriteBinaryIntoFile(const char* path, char* binaryCode) {
+    FILE* file;
+    file = fopen(path, "ab");
+    if (file == NULL) {
+        printf("Error opening file!\n");
+        printf("%s\n", path);
+        return;
+    }
+    unsigned len = strlen(binaryCode);
+    len = len + ((len % 8 == 0) ? 0 : (8 - len % 8));
+    unsigned char* code = (unsigned char*)malloc(sizeof(char) * len);
+    int i;
+    for (i = 0; i < strlen(binaryCode); i++) {
+        code[i] = binaryCode[i];
+    }
+    for (; i < len; i++) {
+        code[i] = '0';
+    }
+    unsigned char* buffer = (char*)malloc(sizeof(char) * len / 8);
+    for (i = 0; i < len; i += 8) {
+        char* chr = (char*)malloc(sizeof(char) * 9);
+        for (int j = 0; j < 8; j++) {
+            chr[j] = code[i + j];
+        }
+        chr[8] = '\0';
+        buffer[i / 8] = (unsigned char)binaryToDec(chr);
+        free(chr);
+    }
+    free(code);
+    fwrite(buffer, sizeof(unsigned char), len / 8, file);
+    fclose(file);
+}
+
+unsigned char* GetBinaryCodeFromFile(const char* path, int pos, int maxLen) {
+    FILE* file;
+    file = fopen(path, "rb");
+    unsigned len = 0;
+    fseek(file, 0L, SEEK_END);
+    if (file == NULL) {
+        printf("Error opening file!\n");
+    }
+    printf("File size: %d\n", ftell(file));
+    if (pos > ftell(file)) {
+        return NULL;
+    }
+    if (ftell(file) > pos + maxLen) {
+        len = maxLen;
+        fseek(file, pos, SEEK_SET);
+    }
+    else {
+        len = ftell(file) - pos;
+        fseek(file, pos, SEEK_SET);
+    }
+    unsigned char* buffer = (unsigned char*)malloc(sizeof(char) * len);
+    fread(buffer, sizeof(char), len, file);
+    fclose(file);
+    unsigned char* ret = (unsigned char*)malloc(sizeof(char) * len * 8 + 1);
+    ret[len * 8] = '\0';
+    for (int i = 0; i < len; i++) {
+        char* cur = decToBinary((int)buffer[i]);
+        for (int j = 0; j < 8; j++) {
+            ret[i * 8 + j] = cur[j];
+        }
+        free(cur);
+    }
+    free(buffer);
+
+    return ret;
 }

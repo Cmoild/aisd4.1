@@ -28,22 +28,22 @@ def huffman_encode(data: str, alph : list):
     c_chars = (c_wchar * len(chars))()
     c_chars[:] = chars
     lib.GetHuffmanCodes.restype = huffman_return
-    print('start c')
+    
     c_res = lib.GetHuffmanCodes(c_chars, c_probs, len(probs))
-    print('codes are ready in c')
+    del c_probs, c_chars, lib
     return [(c_res.out[i].symbol, c_res.out[i].length, c_res.out[i].code) for i in range(c_res.numberOfElements)]
 
 def get_probs(data : str, alph : list):
     lib = CDLL(".\huffmanlib.so")
     lib.get_probs_and_chars.restype = POINTER(c_int * 65535)
     c_data = c_wchar_p(data)
-    print('start counts')
+
     c_res = lib.get_probs_and_chars(c_data, len(data))
-    print('counts are ready')
+
     res = [i for i in c_res.contents]
     chars = [chr(i) for i in range(65535) if res[i] != 0]
     probs = [res[i] for i in range(65535) if res[i] != 0]
-    print('counts are ready')
+
     return probs, chars
 
 def get_encoded(__data : str ,__codes : list):
