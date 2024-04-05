@@ -326,3 +326,9 @@ int* get_probs_and_chars(wchar_t* str, int len) {
 
     return frequencies;
 }
+
+void free_codes(){
+    free(huffmanCodes);
+    numberOfCodes = 0;
+
+}

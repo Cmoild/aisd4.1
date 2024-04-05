@@ -33,6 +33,18 @@ def huffman_encode(data: str, alph : list):
     del c_probs, c_chars, lib
     return [(c_res.out[i].symbol, c_res.out[i].length, c_res.out[i].code) for i in range(c_res.numberOfElements)]
 
+def huffman_encode_with_probs(probs : list, chars : list):
+    lib = CDLL(".\huffmanlib.so")
+    c_probs = (c_int * len(probs))()
+    c_probs[:] = probs
+    c_chars = (c_wchar * len(chars))()
+    c_chars[:] = chars
+    lib.GetHuffmanCodes.restype = huffman_return
+    
+    c_res = lib.GetHuffmanCodes(c_chars, c_probs, len(probs))
+    del c_probs, c_chars, lib
+    return [(c_res.out[i].symbol, c_res.out[i].length, c_res.out[i].code) for i in range(c_res.numberOfElements)]
+
 def get_probs(data : str, alph : list):
     lib = CDLL(".\huffmanlib.so")
     lib.get_probs_and_chars.restype = POINTER(c_int * 65535)
@@ -53,3 +65,6 @@ def get_encoded(__data : str ,__codes : list):
         ret += code_list[__data[i]]
     return ret
 
+def free_codes():
+    lib = CDLL(".\huffmanlib.so")
+    lib.free_codes()

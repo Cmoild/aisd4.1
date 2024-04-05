@@ -84,12 +84,13 @@ typedef struct lz77_result {
     int numberOfElements;
 } lz77_result;
 
-#define SEARCH_BUFFER_SIZE 16384
+#define SEARCH_BUFFER_SIZE 65535
 #define LOOK_AHEAD_BUFFER_SIZE 256
 
 lz77_result lz77_encode(wchar_t* str, int stringLength) {
     lz77_tuple* out = (lz77_tuple*)malloc((stringLength + 1) * sizeof(lz77_tuple));
     wchar_t* buffer = (wchar_t*)calloc(SEARCH_BUFFER_SIZE, sizeof(wchar_t));
+    printf("Start encode\n");
     int numOfElements = 0;
     int cur_buffer_size = 0;
     int pos = 0;
@@ -98,7 +99,7 @@ lz77_result lz77_encode(wchar_t* str, int stringLength) {
     unsigned short offset = 0, length = 0;
 
     while (pos < string_len) {
-
+        if (pos % 10000 == 0) printf("%d\n", pos);
         for (int i = 0; i < cur_buffer_size; i++) {
             if (str[pos] == buffer[i]) {
                 unsigned short cur_len = 0;
@@ -148,16 +149,28 @@ lz77_result lz77_encode(wchar_t* str, int stringLength) {
 }
 
 wchar_t* lz77_decode(lz77_tuple* in, int numOfTuples, int stringLength) {
-    wchar_t* result = (wchar_t*)calloc(stringLength + 1, sizeof(wchar_t));
+    //wchar_t* result = (wchar_t*)calloc(stringLength + 1, sizeof(wchar_t));
+    wchar_t* result = (wchar_t*)calloc(stringLength * 2 + 1, sizeof(wchar_t));
     int pos = 0;
+    printf("String length: %d\n", stringLength);
+    printf("Last tuple %d %d %c\n", in[numOfTuples - 1].offset, in[numOfTuples - 1].length, in[numOfTuples - 1].symbol);
+    printf("Num of tuples: %d\n", numOfTuples);
+    stringLength = 0;
     for (int i = 0; i < numOfTuples; i++) {
         lz77_tuple cur = in[i];
+        if (i == 15299911) printf("%d\n", i);
         //int curPos = pos - cur.offset;
+        stringLength += cur.length;
         for (int j = 0; j < cur.length; j++) {
+
+            if (i == 15299911) printf("%d\n", j);
             result[pos] = result[pos - cur.offset];
             pos++;
+
         }
         result[pos] = cur.symbol;
+        stringLength++;
+        if (i % 100000 == 0) printf("%f\n", (float)i/(float)numOfTuples * 100);
         pos++;
     }
     return result;
@@ -229,8 +242,9 @@ unsigned char* GetBinaryCodeFromFile(const char* path, int pos, int maxLen) {
     fseek(file, 0L, SEEK_END);
     if (file == NULL) {
         printf("Error opening file!\n");
+        return NULL;
     }
-    printf("File size: %d\n", ftell(file));
+    //printf("File size: %d\n", ftell(file));
     if (pos > ftell(file)) {
         return NULL;
     }

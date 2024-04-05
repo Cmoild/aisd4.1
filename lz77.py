@@ -29,3 +29,23 @@ def LZ77_decode(data: list, old_len: int):
     lib.lz77_decode.restype = c_wchar_p
     c_res = lib.lz77_decode(c_data, len(data), old_len)
     return c_res
+
+def lz77_decode(in_tuples, numOfTuples, numOldLen):
+    result = ''
+    pos = 0
+    k = 0
+    
+    for cur in in_tuples:
+        
+        for j in range(cur[1]):
+            if (pos - cur[0] >= 0 and pos - cur[0] < len(result)):
+                result += result[pos - cur[0]]
+                pos += 1
+        
+        result += cur[2]
+        pos += 1
+        if k % 100000 == 0:
+            print(result[len(result)-10:len(result)])
+        k += 1
+    
+    return result

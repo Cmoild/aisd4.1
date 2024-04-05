@@ -1,6 +1,18 @@
 from PIL import Image
 import numpy as np
 
+def run_length_encoding(string):
+    encoded_string = ''
+    count = 1
+    for i in range(1, len(string)):
+        if string[i] == string[i-1]:
+            count += 1
+        else:
+            encoded_string += str(count) + string[i-1]
+            count = 1
+    encoded_string+=chr(count)+string[-1]
+    return encoded_string
+
 def MakeRawRGBImage(link: str, channels: int):
     img = np.asarray(Image.open(link)).copy()
     f = open('RawImage.txt', 'w', encoding='utf-8')
