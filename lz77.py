@@ -49,3 +49,28 @@ def lz77_decode(in_tuples, numOfTuples, numOldLen):
         k += 1
     
     return result
+
+def LZ77_COMPRESS(__path: str, __newPath: str):
+    with open(__path, 'r', encoding='utf-8') as f:
+        data = f.read()
+        f.close()
+    res = LZ77_encode(data)
+    s = "".join([chr(x[0]) + chr(x[1]) + x[2] for x in res])
+    with open(__newPath, 'wb') as f:
+        f.write(bytes(s.encode('utf-8')))
+        f.close()
+    
+def LZ77_DECOMPRESS(__path: str):
+    with open(__path, 'rb') as f:
+        data = f.read()
+        f.close()
+    data = data.decode('utf-8')
+    data = [(ord(data[i]), ord(data[1 + i]), data[2 + i]) for i in range(0, len(data), 3)]
+    old_len = 0
+    for i in data:
+        old_len += i[1] + 1
+    return LZ77_decode(data, old_len)
+
+
+
+

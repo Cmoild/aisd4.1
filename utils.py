@@ -71,6 +71,7 @@ def getLenCodes(__dataLen: int):
     y = [__dataLen/800, __dataLen/150 , __dataLen/45]
     probs = [max(int((3.30333703e+05)*(np.power(np.e, (1/3.3) * (-i+3))) + (y[0])/4.5),1) if i >= 3 else max(int(y[i]),1) for i in range(0, 61)]
     probs += [1 for i in range(61, 257)]
+    probs[256] = max(int(probs[3] / 4500), 1)
     chars = [chr(i) for i in range(0, 257)]
     return huffman_c.huffman_encode_with_probs(probs, chars)
 

@@ -8,14 +8,23 @@ def run_length_encoding(string):
         if string[i] == string[i-1]:
             count += 1
         else:
-            encoded_string += str(count) + string[i-1]
+            if count < 3:
+                encoded_string += count * string[i-1]
+            else:
+                encoded_string += chr(count) + string[i-1] * 2
             count = 1
-    encoded_string+=chr(count)+string[-1]
+    if count < 3:
+        encoded_string += count * string[len(string)-1]
+    else:
+        encoded_string += chr(count) + string[len(string)-1] * 2
+
     return encoded_string
+
+#print(run_length_encoding('aabbbcccccccccccccccccccxyz').encode('utf-8'))
 
 def MakeRawRGBImage(link: str, channels: int):
     img = np.asarray(Image.open(link)).copy()
-    f = open('RawImage.txt', 'w', encoding='utf-8')
+    f = open('./texts/RawImage.txt', 'w', encoding='utf-8')
     if (channels == 3):
         for i in range(len(img)):
             for j in range(len(img[0])):
@@ -27,8 +36,8 @@ def MakeRawRGBImage(link: str, channels: int):
                 f.write(chr(int(img[i][j])))
 
 def CompressRGBImage():
-    rd = open('RawImage.txt', 'r', encoding='utf-8')
-    wr = open('CompressedImage.txt', 'w', encoding='utf-8')
+    rd = open('./texts/RawImage.txt', 'r', encoding='utf-8')
+    wr = open('./texts/CompressedImage.txt', 'w', encoding='utf-8')
     sumstr = ''
     n = 0
     s = ''
@@ -59,7 +68,7 @@ def CompressRGBImage():
 def ShowCompressed(x: int, y: int, channels: int):
     comp = []
     i = 0
-    rd = open('CompressedImage.txt', 'r', encoding='utf-8')
+    rd = open('./texts/CompressedImage.txt', 'r', encoding='utf-8')
     st = ''
     while True:
         st = ''
@@ -93,8 +102,8 @@ def ShowCompressed(x: int, y: int, channels: int):
     Image.fromarray(img).show()
 
 def CompressWBImage():
-    rd = open('RawImage.txt', 'r', encoding='utf-8')
-    wr = open('CompressedImage.txt', 'w', encoding='utf-8')
+    rd = open('./texts/RawImage.txt', 'r', encoding='utf-8')
+    wr = open('./texts/CompressedImage.txt', 'w', encoding='utf-8')
     sumstr = ''
     n = 0
     s = ''
@@ -124,7 +133,7 @@ def CompressWBImage():
 
 def CompressText(link: str, enc: str):
     rd = open(link, 'r', encoding=enc)
-    wr = open('CompressedText.txt', 'w', encoding='utf-8')
+    wr = open('./texts/CompressedText.txt', 'w', encoding='utf-8')
     fl = ''
     j = 0
     sumstr = ''
@@ -155,8 +164,8 @@ def CompressText(link: str, enc: str):
                 wr.write(sumstr)
 
 def DecompressText():
-    rd = open('CompressedText.txt', 'r', encoding='utf-8')
-    wr = open('DecompressedText.txt', 'w', encoding='utf-8')
+    rd = open('./texts/CompressedText.txt', 'r', encoding='utf-8')
+    wr = open('./texts/DecompressedText.txt', 'w', encoding='utf-8')
     fl = ''
     j = 0
     sumstr = ''
@@ -182,8 +191,8 @@ def DecompressText():
     wr.write(fl[len(fl) - 1])
     
 def IsEqual():
-    com = open('текст.txt', 'r', encoding='ansi')
-    dec = open('DecompressedText.txt', 'r', encoding='utf-8')
+    com = open('./texts/текст.txt', 'r', encoding='ansi')
+    dec = open('./texts/DecompressedText.txt', 'r', encoding='utf-8')
     j = 0
     while True:
         st = ''
@@ -199,13 +208,14 @@ def IsEqual():
         j += 1
 
 
-#MakeRawRGBImage('IMG_20210730_111202.jpg', 3)
+#MakeRawRGBImage('./images/IMG_20210730_111202.jpg', 3)
 #MakeRawRGBImage('Cat03.jpg', 3)
 #MakeRawRGBImage('lowresRGB.jpg', 3)
 #MakeRawRGBImage('istockphoto-1337005456-612x612.jpg', 1)
 #MakeRawRGBImage('Без имени.jpg', 3)
 #print(1)
 #CompressRGBImage()
+
 #CompressWBImage()
 #print(2)
 #ShowCompressed(3472, 4624,3)
@@ -213,7 +223,14 @@ def IsEqual():
 #ShowCompressed(1024, 1025,3)
 #ShowCompressed(321, 612,1)
 #ShowCompressed(256, 256,3)
-
+'''
 CompressText('текст.txt', 'ansi')
 DecompressText()
 IsEqual()
+
+'''
+
+def RLE_IMAGE_DEMO():
+    MakeRawRGBImage('./images/Cat03.jpg', 3)
+    CompressRGBImage()
+    ShowCompressed(1024, 1025,3)
