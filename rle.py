@@ -1,6 +1,7 @@
 from PIL import Image
 import numpy as np
 
+
 def run_length_encoding(string):
     encoded_string = ''
     count = 1
@@ -20,7 +21,7 @@ def run_length_encoding(string):
 
     return encoded_string
 
-#print(run_length_encoding('aabbbcccccccccccccccccccxyz').encode('utf-8'))
+# преобразование картинки в собственный формат
 
 def MakeRawRGBImage(link: str, channels: int):
     img = np.asarray(Image.open(link)).copy()
@@ -35,6 +36,7 @@ def MakeRawRGBImage(link: str, channels: int):
             for j in range(len(img[0])):
                 f.write(chr(int(img[i][j])))
 
+# сжатие RGB картинки с помощью RLE
 def CompressRGBImage():
     rd = open('./texts/RawImage.txt', 'r', encoding='utf-8')
     wr = open('./texts/CompressedImage.txt', 'w', encoding='utf-8')
@@ -65,6 +67,7 @@ def CompressRGBImage():
                 wr.write(sumstr[:3])
             n += len(sumstr)//3
 
+# распаковка сжатой картинки
 def ShowCompressed(x: int, y: int, channels: int):
     comp = []
     i = 0
@@ -101,6 +104,7 @@ def ShowCompressed(x: int, y: int, channels: int):
     img = np.array(new_img).astype(np.uint8)
     Image.fromarray(img).show()
 
+# сжатие черно-белой картинки с помощью RLE
 def CompressWBImage():
     rd = open('./texts/RawImage.txt', 'r', encoding='utf-8')
     wr = open('./texts/CompressedImage.txt', 'w', encoding='utf-8')
@@ -131,6 +135,7 @@ def CompressWBImage():
                 wr.write(sumstr[0])
             n += len(sumstr)
 
+# сжатие текста
 def CompressText(link: str, enc: str):
     rd = open(link, 'r', encoding=enc)
     wr = open('./texts/CompressedText.txt', 'w', encoding='utf-8')
@@ -163,6 +168,7 @@ def CompressText(link: str, enc: str):
             else:
                 wr.write(sumstr)
 
+# распаковка сжатого текста
 def DecompressText():
     rd = open('./texts/CompressedText.txt', 'r', encoding='utf-8')
     wr = open('./texts/DecompressedText.txt', 'w', encoding='utf-8')
@@ -231,6 +237,6 @@ IsEqual()
 '''
 
 def RLE_IMAGE_DEMO():
-    MakeRawRGBImage('./images/Cat03.jpg', 3)
-    CompressRGBImage()
-    ShowCompressed(1024, 1025,3)
+    MakeRawRGBImage('./images/istockphoto-1337005456-612x612.jpg', 1)
+    CompressWBImage()
+    ShowCompressed(321, 612,1)

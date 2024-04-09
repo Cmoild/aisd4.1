@@ -4,6 +4,7 @@ import utils
 
 NUMBER_OF_DIGITS = 16
 
+# получение бинарного кода для записи в файл
 def getBinaryCode(__path: str):
 
     abc = [chr(c) for c in range(0, 65535)]
@@ -36,6 +37,7 @@ def getBinaryCode(__path: str):
 
     return new_data, codes, old_len
 
+# декодирование бинарного кода, получение списка для декодирования LZ77
 def getLZ77Code(__binaryCode: str, __huffmanCodes: list, __oldLen: int):
     huffman_for_lens = utils.getLenCodes(__oldLen)
     dictlendec = {c[2] : c[0] for c in huffman_for_lens}
@@ -70,12 +72,14 @@ def getLZ77Code(__binaryCode: str, __huffmanCodes: list, __oldLen: int):
         old_data.append((numoffs, ord(numlens), char))
     return old_data
 
+# запись бинарного кода в файл
 def binaryDataToFile(__data: str, __path: str):
     from ctypes import CDLL, c_char_p
     lib = CDLL(".\mylib.so")
     for i in range(0, len(__data), 65536):
         lib.WriteBinaryIntoFile(c_char_p(__path.encode('utf-8')), c_char_p(__data[i:i+65536].encode('utf-8')))
 
+# чтение бинарного кода из файла
 def binaryDataFromFile(__path: str):
     from ctypes import CDLL, c_char_p, c_int
     lib = CDLL(".\mylib.so")
@@ -97,6 +101,7 @@ def binaryDataFromFile(__path: str):
     #print(len(s))
     return s
 
+# компрессор на основе LZ77 и huffman
 def LZ77_Huffman_COMPRESS(__path: str, __newPath: str):
     print("Getting binary code...")
     new_data, codes, len_old = getBinaryCode(__path)
@@ -113,6 +118,7 @@ def LZ77_Huffman_COMPRESS(__path: str, __newPath: str):
     binaryDataToFile(new_data, __newPath)
     print("Done")
 
+# декомпрессор на основе LZ77 и huffman
 def LZ77_Huffman_DECOMPRESS(__path: str):
     print("Importing...")
     data = binaryDataFromFile(__path)

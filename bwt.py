@@ -1,3 +1,4 @@
+# прямое преобразование BWT с использованием Radix Sort
 def BWT(data):
     BWT_list = []
     for i in range(len(data)):
@@ -7,6 +8,7 @@ def BWT(data):
     ind = BWT_list.index(data)
     return transformed_data, ind
 
+# прямое преобразование BWT с использованием стандартной библиотеки
 def BWT_tim(data):
     BWT_list = []
     for i in range(len(data)):
@@ -16,6 +18,7 @@ def BWT_tim(data):
     ind = BWT_list.index(data)
     return transformed_data, ind
 
+# обратное преобразование BWT
 def inverse_BWT(data, ind):
     
     L = [(data[i], i) for i in range(len(data))]
@@ -29,6 +32,7 @@ def inverse_BWT(data, ind):
         s = s + data[ind]
     return s
 
+# сортировка Radix Sort
 def RadixSort(strings: list):
     from ctypes import CDLL, c_wchar_p, POINTER
     lib = CDLL(".\mylib.so")
@@ -40,4 +44,17 @@ def RadixSort(strings: list):
     lib.sort(c_arr, len(strings))
     return [i for i in c_arr]
 
+from ctypes import CDLL, c_wchar_p, POINTER, Structure, c_int, c_wchar
+class bwt(Structure):
+    _fields_ = [
+        ('str', c_wchar_p),
+        ('index', c_int)
+    ]
+
+def BWT_c(data):
+    lib = CDLL("./bwtlib.so")
+    c_data = c_wchar_p(data)
+    lib.BWT.restype = bwt
+    res = lib.BWT(c_data)
+    return res.str, res.index
 

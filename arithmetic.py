@@ -1,38 +1,43 @@
-def arithmetic_encoding(data, precision):
-    lower = 0
-    upper = 1
-    range_size = 1
+from huffman_c import get_probs
 
-    for symbol in data:
-        symbol_range = range_size // len(data)
-        symbol_index = ord(symbol)
-        lower += symbol_range * symbol_index
-        upper = lower + symbol_range
-        range_size = upper - lower
+def arithmetic_encoding(data, probs, chars):
+    print(probs, chars)
+    left = 0
+    right = 1
+    total_size = sum(probs)
+    segments = [0]
+    segments += [probs[i] / total_size for i in range(0, len(probs))]
+    segments = [segments[i] + segments[i-1] for i in range(1, len(probs))]
+    print (segments)
+    return
 
-    return lower
+    for c in data:
+        left += probs[chars.index(c)] / total_size
+        if (chars.index(c) != len(probs) - 1):
+            right += left + (probs[chars.index(c) + 1]) / total_size
+        else:
+            right = 1
+        total_size = total_size/(right - left)
+        print(left, right, total_size)
+    
+    return left
 
-def arithmetic_decoding(encoded_value, precision, data_length):
+
+def arithmetic_decoding(left, probs, chars, data_length):
     data = ""
-    lower = 0
-    upper = 1
-    range_size = 1
+    right = 1
+    total_size = sum(probs)
+
 
     for _ in range(data_length):
-        symbol_range = range_size / data_length
-        symbol_index = (encoded_value - lower) / symbol_range
-        symbol_char = chr(symbol_index)
-        data += symbol_char
-
-        lower += symbol_range * symbol_index
-        upper = lower + symbol_range
-        range_size = upper - lower
+        print(left, right, total_size)
 
     return data
 
 # Example usage
 data = "hello"
+probs, chars = get_probs(data, None)
 precision = 8
-result = arithmetic_encoding(data, precision)
+result = arithmetic_encoding(data, probs, chars)
 print(result)
-print(arithmetic_decoding(result, precision, len(data)))
+

@@ -1,5 +1,4 @@
-#f = open('test.txt', 'wb')
-#незначащие нули в начале (запоминать первый символ)
+
 
 def BinaryToHex(data):
     n = len(data) % 4
@@ -18,6 +17,7 @@ def HexToBinary(data):
         ret += '0' * (4 - len(bin(int(data[i], 16))[2:])) + bin(int(data[i], 16))[2:]
     return ret
 
+# возвращает список кодов для каждого символа
 def HuffmanCodes(data : str, alph : list):
     prob = [(alph[i], data.count(alph[i]), '') for i in range(len(alph))]
     prob.sort(key = lambda x: x[1])
@@ -31,6 +31,7 @@ def HuffmanCodes(data : str, alph : list):
         prob[i] = (prob[i][0], prob[i][1], '0' + prob[i][2])
     return prob
 
+# возвращает закодированную строку
 def EncodeHuffman(data : str, alph : list):
     codes = HuffmanCodes(data, alph)
     set = {}
@@ -46,6 +47,7 @@ def EncodeHuffman(data : str, alph : list):
             print(i)
     return ret
 
+# возвращает список канонических кодов
 def CanonicalHuffmanCodes(codes: list):
     ret = []
     for i in codes:

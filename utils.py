@@ -3,6 +3,7 @@ import numpy as np
 import math
 from matplotlib import pyplot as plt
 
+# вычисление энтропии
 def calculate_entropy(string):
     if not string:
         return 0
@@ -33,7 +34,7 @@ def graph(func, x_range):
    y = func(x)
    plt.plot(x, y)
 
-
+# возвращает список кодов хаффмана на основе заранее вычесленных констант, используется в LZ77_Huffman
 def getLenCodes(__dataLen: int):
     '''
     dictionarylens = {c[1] : 0 for c in _res}#

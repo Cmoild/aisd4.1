@@ -20,6 +20,7 @@ class get_probs_and_chars_return(Structure):
             ('probs', (c_int * 65535)),
     ]
 
+# возвращает список кортежей (символ, длина кода, код) на основе строки
 def huffman_encode(data: str, alph : list):
     lib = CDLL(".\huffmanlib.so")
     probs, chars = get_probs(data, alph)
@@ -33,6 +34,7 @@ def huffman_encode(data: str, alph : list):
     del c_probs, c_chars, lib
     return [(c_res.out[i].symbol, c_res.out[i].length, c_res.out[i].code) for i in range(c_res.numberOfElements)]
 
+# возвращает список кортежей (символ, длина кода, код) на основе списка вероятностей и списка символов
 def huffman_encode_with_probs(probs : list, chars : list):
     lib = CDLL(".\huffmanlib.so")
     c_probs = (c_int * len(probs))()
@@ -45,6 +47,7 @@ def huffman_encode_with_probs(probs : list, chars : list):
     del c_probs, c_chars, lib
     return [(c_res.out[i].symbol, c_res.out[i].length, c_res.out[i].code) for i in range(c_res.numberOfElements)]
 
+# возвращает список вероятностей и список символов
 def get_probs(data : str, alph : list):
     lib = CDLL(".\huffmanlib.so")
     lib.get_probs_and_chars.restype = POINTER(c_int * 65535)
@@ -58,13 +61,20 @@ def get_probs(data : str, alph : list):
 
     return probs, chars
 
+# возвращает закодированную строку
 def get_encoded(__data : str ,__codes : list):
     ret = ''
     code_list = {__codes[i][0] : __codes[i][2] for i in range(len(__codes))}
+    '''
     for i in range(0, len(__data)):
         ret += code_list[__data[i]]
+        if (i % 10000 == 0):
+            print(i)
+    '''
+    ret = "".join([code_list[__data[i]] for i in range(len(__data))])
     return ret
 
+# освобождает память
 def free_codes():
     lib = CDLL(".\huffmanlib.so")
     lib.free_codes()

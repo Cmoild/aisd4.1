@@ -12,6 +12,7 @@ class LZ77_result(Structure):
         ('numberOfElements', c_int)
     ]
 
+# возвращает список кортежей (offset, length, symbol)
 def LZ77_encode(data: str):
     lib = CDLL(".\mylib.so")
     c_data = c_wchar_p(data)
@@ -19,6 +20,7 @@ def LZ77_encode(data: str):
     c_res = lib.lz77_encode(c_data, len(data))
     return [(c_res.out[i].offset, c_res.out[i].length, c_res.out[i].symbol) for i in range(c_res.numberOfElements)]
 
+# возвращает строку, полученную на основе списка (см. LZ77_encode)
 def LZ77_decode(data: list, old_len: int):
     lib = CDLL(".\mylib.so")
     c_data = (LZ77_struct * len(data))()
@@ -30,6 +32,7 @@ def LZ77_decode(data: list, old_len: int):
     c_res = lib.lz77_decode(c_data, len(data), old_len)
     return c_res
 
+# возвращает строку, полученную на основе списка (см. LZ77_encode)
 def lz77_decode(in_tuples, numOfTuples, numOldLen):
     result = ''
     pos = 0
@@ -50,6 +53,7 @@ def lz77_decode(in_tuples, numOfTuples, numOldLen):
     
     return result
 
+# компрессор на основе LZ77
 def LZ77_COMPRESS(__path: str, __newPath: str):
     with open(__path, 'r', encoding='utf-8') as f:
         data = f.read()
@@ -57,14 +61,15 @@ def LZ77_COMPRESS(__path: str, __newPath: str):
     res = LZ77_encode(data)
     s = "".join([chr(x[0]) + chr(x[1]) + x[2] for x in res])
     with open(__newPath, 'wb') as f:
-        f.write(bytes(s.encode('utf-8')))
+        f.write(bytes(s.encode('utf-8', 'surrogatepass')))
         f.close()
-    
+
+# декомпрессор на основе LZ77
 def LZ77_DECOMPRESS(__path: str):
     with open(__path, 'rb') as f:
         data = f.read()
         f.close()
-    data = data.decode('utf-8')
+    data = data.decode('utf-8', 'surrogatepass')
     data = [(ord(data[i]), ord(data[1 + i]), data[2 + i]) for i in range(0, len(data), 3)]
     old_len = 0
     for i in data:

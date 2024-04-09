@@ -1,3 +1,6 @@
-gcc -fPIC -shared -O2 -o mylib.so mylib.c
+gcc -fPIC -shared -O3 -o mylib.so mylib.c
 gcc -fPIC -shared -o huffmanlib.so huffmanlib.c
+gcc -fPIC -shared -O3 -o bwtlib.so bwtlib.c
 gcc mylib.c -o mylib.exe
+
+42613 -- 8191
