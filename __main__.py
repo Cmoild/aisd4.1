@@ -53,16 +53,16 @@ def LZ77_DEMO():
 def BWT_MTF_HA_DEMO():
     
 
-    bwt_mtf_ha.BWT_MTF_HA_COMPRESS('./texts/enwik7.txt', 'C:/MyGames/enwik7bmh.bin')
+    bwt_mtf_ha.BWT_MTF_HA_COMPRESS('./texts/enwik7.txt', './compressed/enwik7bmh.bin')
     
+    return
+    decoded = bwt_mtf_ha.BWT_MTF_HA_DECOMPRESS('./compressed/testbmh.bin')
     
-    decoded = bwt_mtf_ha.BWT_MTF_HA_DECOMPRESS('C:/MyGames/enwik7bmh.bin')
-    
-    with open('./texts/enwik7cpy.txt', 'w', encoding='utf-8') as f:
+    with open('./texts/testcpy.txt', 'w', encoding='utf-8') as f:
         f.write(decoded)
         f.close()
     
-    with open('./texts/enwik7.txt', 'r', encoding='utf-8') as f:
+    with open('./texts/test.txt', 'r', encoding='utf-8') as f:
         orig = f.read()
         f.close()
     
@@ -72,7 +72,7 @@ def BWT_MTF_HA_DEMO():
 def main():
     
 
-
+    BWT_MTF_HA_DEMO()
     return
 
 if __name__ == '__main__':

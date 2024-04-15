@@ -4,8 +4,9 @@ import mtf
 import lz77_huffman
 from time import time
 
-LENGTH_OF_RUN = 16383
-NUMBER_OF_DIGITS = 14
+LENGTH_OF_RUN = 65535
+#LENGTH_OF_RUN = 10
+NUMBER_OF_DIGITS = 16
 
 from ctypes import CDLL, c_wchar_p, POINTER, Structure, c_int, c_wchar, c_ushort
 class BWT_MTF(Structure):
