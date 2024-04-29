@@ -51,10 +51,10 @@ class bwt(Structure):
         ('index', c_int)
     ]
 
-def BWT_c(data):
+def BWT_c(__data):
     lib = CDLL("./bwtlib.so")
-    c_data = c_wchar_p(data)
+    c_data = c_wchar_p(__data)
     lib.BWT.restype = bwt
-    res = lib.BWT(c_data)
+    res = lib.BWT(c_data, len(__data))
     return res.str, res.index
 

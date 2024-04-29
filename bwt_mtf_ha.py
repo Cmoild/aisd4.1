@@ -5,10 +5,10 @@ import lz77_huffman
 from time import time
 
 LENGTH_OF_RUN = 65535
-#LENGTH_OF_RUN = 10
-NUMBER_OF_DIGITS = 16
+LENGTH_OF_RUN = 400000
+NUMBER_OF_DIGITS = 17
 
-from ctypes import CDLL, c_wchar_p, POINTER, Structure, c_int, c_wchar, c_ushort
+from ctypes import CDLL, c_wchar_p, POINTER, Structure, c_int, c_wchar, c_ushort, c_uint16
 class BWT_MTF(Structure):
     _fields_ = [
         ('arr', (c_ushort * LENGTH_OF_RUN)),
@@ -44,7 +44,7 @@ def BWT_MTF_HA_COMPRESS(__path: str, __newPath: str):
         print(start2 - start1, time() - start2)
         print(i)
     '''
-    
+    print(len(data))
     while i < len(data):
         start1 = time()
         s = data[i:i + LENGTH_OF_RUN]
@@ -52,12 +52,13 @@ def BWT_MTF_HA_COMPRESS(__path: str, __newPath: str):
         inds.append(ind)
         new_data += ''.join([chr(res[c]) for c in range(len(s))])
         i += LENGTH_OF_RUN
-        print(time() - start1)
-        print(i)
+        #print(time() - start1)
+        #print(i)
     
     
     print("Making huffman codes")
     codes = huffman_c.huffman_encode(new_data, d.copy())
+    #print(codes)
     huffman_c.free_codes()
     print("Encoding")
     new_data = huffman_c.get_encoded(new_data, codes)
@@ -122,3 +123,46 @@ def BWT_MTF_HA_DECOMPRESS(__path: str):
         print(i)
 
     return decoded
+
+
+
+
+
+def BWT_MTF_HA_COMPRESS_ver2(__path: str, __newPath: str):
+    with open(__path, 'r', encoding='utf-8') as f:
+        data = f.read()
+        f.close()
+    d = [chr(c) for c in range(0, 65535)]
+    i = 0
+    new_data = ''
+    inds = []
+    
+    from bwt import BWT_c
+    while i < len(data):
+        start1 = time()
+        s = data[i:i + LENGTH_OF_RUN]
+        res, ind = BWT_c(s)
+        inds.append(ind)
+        
+        new_data += res
+        i += LENGTH_OF_RUN
+        print(time() - start1)
+        print(i)
+    
+    new_data = mtf.mtf_encode(new_data, d.copy())
+    
+    print("Making huffman codes")
+    codes = huffman_c.huffman_encode(new_data, d.copy())
+    huffman_c.free_codes()
+    print("Encoding")
+    new_data = huffman_c.get_encoded(new_data, codes)
+
+    inds_in_binary = "".join([(NUMBER_OF_DIGITS - len(bin(c)[2:])) * '0' + bin(c)[2:] for c in inds])
+    num_of_inds = (16 - len(bin(len(inds))[2:])) * '0' + bin(len(inds))[2:]
+    num_of_codes = (14 - len(bin(len(codes))[2:])) * '0' + bin(len(codes))[2:]
+    codes_in_binary = ''.join([(16 - len(bin(ord(c[0]))[2:])) * '0' + bin(ord(c[0]))[2:] + (6 - len(bin(len(c[2]))[2:])) * '0' + bin(len(c[2]))[2:] + c[2] for c in codes])
+    old_len = (32 - len(bin(len(data))[2:])) * '0' + bin(len(data))[2:]
+    new_data = num_of_inds + inds_in_binary + num_of_codes + codes_in_binary + old_len + new_data
+    print("Saving")
+    lz77_huffman.binaryDataToFile(new_data, __newPath)
+

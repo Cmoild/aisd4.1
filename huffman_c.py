@@ -51,7 +51,9 @@ def huffman_encode_with_probs(probs : list, chars : list):
 def get_probs(data : str, alph : list):
     lib = CDLL(".\huffmanlib.so")
     lib.get_probs_and_chars.restype = POINTER(c_int * 65535)
-    c_data = c_wchar_p(data)
+    #c_data = c_wchar_p(data)
+    c_data = (c_wchar * len(data))()
+    c_data[:] = data
 
     c_res = lib.get_probs_and_chars(c_data, len(data))
 

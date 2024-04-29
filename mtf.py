@@ -7,7 +7,7 @@ def mtf_encode(data: str, dictionary: list):
         encoded.append(ind)
         dictionary.pop(ind)
         dictionary.insert(0, data[i])
-    print(encoded)
+    
     return ''.join([chr(i) for i in encoded])
 
 # выполняет обратное преобразование

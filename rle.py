@@ -5,19 +5,20 @@ import numpy as np
 def run_length_encoding(string):
     encoded_string = ''
     count = 1
+    flag = chr(65535)
     for i in range(1, len(string)):
         if string[i] == string[i-1]:
             count += 1
         else:
-            if count < 3:
+            if count < 4:
                 encoded_string += count * string[i-1]
             else:
-                encoded_string += chr(count) + string[i-1] * 2
+                encoded_string += flag + chr(count) + string[i-1]
             count = 1
-    if count < 3:
+    if count < 4:
         encoded_string += count * string[len(string)-1]
     else:
-        encoded_string += chr(count) + string[len(string)-1] * 2
+        encoded_string += flag + chr(count) + string[len(string)-1]
 
     return encoded_string
 

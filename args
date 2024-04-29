@@ -3,4 +3,7 @@ gcc -fPIC -shared -o huffmanlib.so huffmanlib.c
 gcc -fPIC -shared -O3 -o bwtlib.so bwtlib.c
 gcc mylib.c -o mylib.exe
 
-42613 -- 8191
+gcc -shared -O3 -o bwtlib.so bwtlib.o libsais16.o
+gcc -fPIC -c bwtlib.c
+gcc -o bwt.exe bwtlib.o libsais16.o
+

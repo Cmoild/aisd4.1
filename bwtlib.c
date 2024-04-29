@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include <omp.h>
+#include "libsais16.h"
 
 void mergesort(wchar_t* a[],int i,int j);
 void merge(wchar_t* a[],int i1,int j1,int i2,int j2);
@@ -35,7 +36,8 @@ wchar_t* ShiftedArray(const wchar_t* orig, const int shift) {
     return shifted;
 }
 
-#define RUN_LENGTH 65535
+//#define RUN_LENGTH 65535
+#define RUN_LENGTH 400000
 static wchar_t* temp[RUN_LENGTH];
 
 typedef struct BWT_return {
@@ -59,7 +61,6 @@ BWT_return BWT(wchar_t* data, int len) {
     
     
     mergesort(arr, 0, len - 1);
-    
     
     //radix_sort(arr, len);
     wchar_t* ret = (wchar_t*)calloc(len + 1, sizeof(wchar_t));
@@ -100,22 +101,37 @@ void MoveToFront(wchar_t* data, int len) {
 }
 
 typedef struct BWT_MTF_return {
-    unsigned short arr[RUN_LENGTH];
+    unsigned short* arr;
+    //uint16_t arr[RUN_LENGTH];
     int index;
 } BWT_MTF_return;
 
 BWT_MTF_return BWT_MTF(wchar_t* data, int len) {
     
-    BWT_return ret = BWT(data, len);
+    //BWT_return ret = BWT(data, len);
+    //********USING LIBSAIS***********
     
+    BWT_return ret;
+    uint16_t* resbwt = (uint16_t*)malloc(len * sizeof(uint16_t));
+    int32_t* tmp = (int32_t*)malloc(len * sizeof(int32_t));
+    ret.index = libsais16_bwt(data, resbwt, tmp, len, 0, NULL);
+    ret.str = resbwt;
+    
+    //********************************
     data = ret.str;
     MoveToFront(data, len);
     
     BWT_MTF_return result;
+    int k = 0;
+    result.arr = data;
+    /*
     for (int i = 0; i < len; i++) {
         result.arr[i] = (unsigned short)data[i];
+        
     }
+    */
     result.index = ret.index;
+    //printf("%d\n", k);
     return result;
 }
 
@@ -123,26 +139,21 @@ BWT_MTF_return BWT_MTF(wchar_t* data, int len) {
 /*
 int main()
 {
-    int  num, i;
-    wchar_t* a[] = {L"\"MC", L"MC\"", L"C\"M"};
-    wchar_t* data = L"\"MC";
-    num = 3;
-
-    //a = (wchar_t**)malloc(sizeof(wchar_t*) * num);
-    //for(i=0;i<num;i++)
-
-        //scanf("%ls",&a[i]);
     
-    mergesort(a, 0, num-1);
+    wchar_t* s = (wchar_t*)malloc(RUN_LENGTH * sizeof(wchar_t));
+    FILE* f;
+    f = _wfopen(L"C:\\Users\\cold1\\vscpr\\aisd\\aisd4.1\\texts\\enwik7.txt", L"r");
+    fread(s, 2, RUN_LENGTH, f);
     
-    printf("\nSorted array :\n");
-    for(i=0;i<num;i++)
-        printf("%ls ",a[i]);
+    int16_t* res = (int16_t*)malloc(RUN_LENGTH * sizeof(int16_t));
+    int32_t* tmp = (int32_t*)malloc(RUN_LENGTH * sizeof(int32_t));
+    int x = libsais16_bwt(s, res, tmp, 6, 0, NULL);
+    printf("%d\n", x);
     
-    BWT_MTF(data, num);
     return 0;
 }
 */
+
 void mergesort(wchar_t* a[],int i,int j)
 {
     int mid;
