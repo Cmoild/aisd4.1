@@ -37,7 +37,7 @@ wchar_t* ShiftedArray(const wchar_t* orig, const int shift) {
 }
 
 //#define RUN_LENGTH 65535
-#define RUN_LENGTH 400000
+#define RUN_LENGTH 1000000
 static wchar_t* temp[RUN_LENGTH];
 
 typedef struct BWT_return {
@@ -133,6 +133,12 @@ BWT_MTF_return BWT_MTF(wchar_t* data, int len) {
     result.index = ret.index;
     //printf("%d\n", k);
     return result;
+}
+
+uint16_t* UNBWT(uint16_t* data, int len, int ind) {
+    int32_t* tmp = (int32_t*)malloc(len * sizeof(int32_t));
+    libsais16_unbwt(data, data, tmp, len, NULL, ind);
+    return data;
 }
 
 

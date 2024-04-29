@@ -44,7 +44,7 @@ def RadixSort(strings: list):
     lib.sort(c_arr, len(strings))
     return [i for i in c_arr]
 
-from ctypes import CDLL, c_wchar_p, POINTER, Structure, c_int, c_wchar
+from ctypes import CDLL, c_wchar_p, POINTER, Structure, c_int, c_wchar, c_uint16
 class bwt(Structure):
     _fields_ = [
         ('str', c_wchar_p),
@@ -58,3 +58,11 @@ def BWT_c(__data):
     res = lib.BWT(c_data, len(__data))
     return res.str, res.index
 
+def inverse_BWT_c(__data, __ind):
+    lib = CDLL("./bwtlib.so")
+    c_data = (c_uint16 * len(__data))()
+    c_data[:] = [ord(i) for i in __data]
+    c_ind = c_int(__ind)
+    lib.UNBWT.restype = c_wchar_p
+    res = lib.UNBWT(c_data, len(__data), c_ind)
+    return res

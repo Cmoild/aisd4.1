@@ -5,13 +5,13 @@ import lz77_huffman
 from time import time
 
 LENGTH_OF_RUN = 65535
-LENGTH_OF_RUN = 400000
-NUMBER_OF_DIGITS = 17
+LENGTH_OF_RUN = 110000000
+NUMBER_OF_DIGITS = 27
 
 from ctypes import CDLL, c_wchar_p, POINTER, Structure, c_int, c_wchar, c_ushort, c_uint16
 class BWT_MTF(Structure):
     _fields_ = [
-        ('arr', (c_ushort * LENGTH_OF_RUN)),
+        ('arr', POINTER(c_ushort)),
         ('index', c_int)
     ]
 
@@ -70,26 +70,31 @@ def BWT_MTF_HA_COMPRESS(__path: str, __newPath: str):
     old_len = (32 - len(bin(len(data))[2:])) * '0' + bin(len(data))[2:]
     new_data = num_of_inds + inds_in_binary + num_of_codes + codes_in_binary + old_len + new_data
     print("Saving")
+    
     lz77_huffman.binaryDataToFile(new_data, __newPath)
 
 # декомпрессор на основе BWT+MTF+Huffman
 def BWT_MTF_HA_DECOMPRESS(__path: str):
+    print("Reading")
     d = [chr(c) for c in range(0, 65535)]
     data = lz77_huffman.binaryDataFromFile(__path)
+    print(data[0:50])
     i = 0
     num_of_inds = int(data[0:16], 2)
+    print(num_of_inds)
     i += 16
     inds = []
     for j in range(num_of_inds):
         inds.append(int(data[i:i+NUMBER_OF_DIGITS], 2))
         i += NUMBER_OF_DIGITS
-    
+    print(inds)
     num_of_codes = int(data[i:i+14], 2)
     i += 14
     codes = {}
     for j in range(num_of_codes):
         codes[data[i+22:i+22+int(data[i+16:i+22], 2)]] = chr(int(data[i:i+16], 2))
         i += 22 + int(data[i+16:i+22], 2)
+    print(num_of_codes)
     
     old_len = int(data[i:i+32],2)
     i += 32
@@ -97,18 +102,21 @@ def BWT_MTF_HA_DECOMPRESS(__path: str):
     i = 0
     n = 0
     new_data = ''
+    print("Decoding")
     while n < old_len:
         j = 1
         char = ''
         while True:
+            #print(j)
             if (data[i:i+j] in codes.keys()):
                 char = codes[data[i:i+j]]
+                #print(char)
                 break
             else:
                 j += 1
         i += j
         n += 1
-        if (n % LENGTH_OF_RUN == 0):
+        if (n % 50000 == 0):
             print(n)
         new_data += char
 
@@ -117,7 +125,8 @@ def BWT_MTF_HA_DECOMPRESS(__path: str):
     for i in range(0, old_len, LENGTH_OF_RUN):
         s = new_data[i:i+LENGTH_OF_RUN]
         s = mtf.mtf_decode(s, d.copy())
-        s = bwt.inverse_BWT(s, inds[n])
+        #s = bwt.inverse_BWT(s, inds[n])
+        s = bwt.inverse_BWT_c(s, inds[n])
         n += 1
         decoded += s
         print(i)

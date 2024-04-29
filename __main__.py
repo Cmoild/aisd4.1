@@ -56,10 +56,10 @@ def LZ77_DEMO():
 def BWT_MTF_HA_DEMO():
     
 
-    bwt_mtf_ha.BWT_MTF_HA_COMPRESS('./texts/enwik7.txt', './compressed/enwik7bmhNEW.bin')
+    bwt_mtf_ha.BWT_MTF_HA_COMPRESS('./texts/enwik8.txt', './compressed/enwik8bmhNEW.bin')
     
     return
-    decoded = bwt_mtf_ha.BWT_MTF_HA_DECOMPRESS('./compressed/enwik8bmh.bin')
+    decoded = bwt_mtf_ha.BWT_MTF_HA_DECOMPRESS('./compressed/enwik7bmhNEW.bin')
     
     with open('./texts/enwik7cpy.txt', 'w', encoding='utf-8') as f:
         f.write(decoded)

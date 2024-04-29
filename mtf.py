@@ -15,6 +15,8 @@ def mtf_decode(encoded: str, dictionary: list):
     data = ''
     enc = [ord(i) for i in encoded]
     for i in range(len(encoded)):
+        if (i % 50000 == 0):
+            print(i)
         data += dictionary[enc[i]]
         dictionary.pop(enc[i])
         dictionary.insert(0, data[i])
