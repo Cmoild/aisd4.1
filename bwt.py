@@ -66,3 +66,39 @@ def inverse_BWT_c(__data, __ind):
     lib.UNBWT.restype = c_wchar_p
     res = lib.UNBWT(c_data, len(__data), c_ind)
     return res
+
+def MakeSuffixArray(__data):
+    '''Создание суффиксного массива'''
+    suffix_list = []
+    for i in range(len(__data)):
+        suffix_list.append(__data[i:])
+    suffix_list.sort()
+
+    suffix_array = []
+    for suffix in suffix_list:
+        offset = len(__data) - len(suffix)
+        suffix_array.append(offset)
+
+    return suffix_array
+
+def buildTypeMap(__data):
+    ''' Возвращает типы суффиксов строки '''
+    res = bytearray(len(__data) + 1)
+    res[-1] = ord('S')
+    if not len(__data):
+        return res
+    res[-2] = ord('L')
+    for i in range(len(__data)-2, -1, -1):
+        if __data[i] > __data[i+1]:
+            res[i] = ord('L')
+        elif __data[i] == __data[i+1] and res[i+1] == ord('L'):
+            res[i] = ord('L')
+        else:
+            res[i] = ord('S')
+    return res.decode('utf-8')
+
+
+def BWT_withSA(__data: str, __suffArr: list):
+    '''Прямое преобразование BWT с использованием суффиксного массива'''
+    return "".join([__data[i - 1] for i in __suffArr]), __suffArr.index(0)
+

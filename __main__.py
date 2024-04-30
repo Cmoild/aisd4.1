@@ -9,7 +9,7 @@ from rle import RLE_IMAGE_DEMO, run_length_encoding
 import bwt_mtf_ha
 
 def LZ77_Huffman_DEMO():
-    lz77_huffman.LZ77_Huffman_COMPRESS('C:\\Users\\cold1\\Downloads\\enwik8\\enwik8', './compressed/enwik8lzhANOTHER.bin')
+    lz77_huffman.LZ77_Huffman_COMPRESS('./compressed/enwik8bmhNEW.bin', './compressed/enwik8bmhNEW.bin')
 
     
     s = lz77_huffman.LZ77_Huffman_DECOMPRESS('./compressed/enwik8lzhANOTHER.bin')
@@ -56,16 +56,16 @@ def LZ77_DEMO():
 def BWT_MTF_HA_DEMO():
     
 
-    bwt_mtf_ha.BWT_MTF_HA_COMPRESS('./texts/enwik8.txt', './compressed/enwik8bmhNEW.bin')
+    bwt_mtf_ha.BWT_MTF_HA_COMPRESS('./texts/test.txt', './compressed/test.bin')
     
-    return
-    decoded = bwt_mtf_ha.BWT_MTF_HA_DECOMPRESS('./compressed/enwik7bmhNEW.bin')
     
-    with open('./texts/enwik7cpy.txt', 'w', encoding='utf-8') as f:
+    decoded = bwt_mtf_ha.BWT_MTF_HA_DECOMPRESS('./compressed/test.bin')
+    
+    with open('./texts/testcpy.txt', 'w', encoding='utf-8') as f:
         f.write(decoded)
         f.close()
     
-    with open('./texts/enwik7.txt', 'r', encoding='utf-8') as f:
+    with open('./texts/test.txt', 'r', encoding='utf-8') as f:
         orig = f.read()
         f.close()
     

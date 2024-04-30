@@ -76,3 +76,31 @@ def getLenCodes(__dataLen: int):
     chars = [chr(i) for i in range(0, 257)]
     return huffman_c.huffman_encode_with_probs(probs, chars)
 
+def count_substrings_with_duplicates(input_string):
+    count = 0
+    list_of_substrings = []
+    i = 0
+    while i < len(input_string):
+        j = i + 1
+        l = 0
+        while j <= len(input_string):
+            substring = input_string[i:j]
+            if substring.count(substring[0]) == len(substring) and j != len(input_string):
+                l += 1
+            else:
+                if substring.count(substring[0]) == len(substring) and j == len(input_string):
+                    l += 1
+                if l > 1:
+                    count += 1
+                    list_of_substrings.append(substring[0:l])
+                    i += l - 1
+                break
+            j += 1
+        i += 1
+
+    mid_len = sum([len(c) for c in list_of_substrings]) / len(list_of_substrings)
+
+    formula = (sum([len(c) for c in list_of_substrings]) - 2 * len(list_of_substrings)) / len(input_string)
+
+    return mid_len, formula
+

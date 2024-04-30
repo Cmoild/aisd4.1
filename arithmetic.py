@@ -166,11 +166,8 @@ with open('./texts/test.txt', 'r', encoding='utf-8') as f:
     data = f.read()
     f.close()
 
-import mtf
 
-data = mtf.mtf_encode(data, [chr(i) for i in range(0, 65535)])
 print(data[:8])
 probs, chars = get_probs(data, None)
 freq = {chars[i]: probs[i] for i in range(len(chars))}
 
-AE_compress(data[:8], freq)
