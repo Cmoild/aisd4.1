@@ -141,6 +141,15 @@ uint16_t* UNBWT(uint16_t* data, int len, int ind) {
     return data;
 }
 
+BWT_return FastBWT(uint16_t* data, int len){
+    BWT_return ret;
+    uint16_t* resbwt = (uint16_t*)malloc(len * sizeof(uint16_t));
+    int32_t* tmp = (int32_t*)malloc(len * sizeof(int32_t));
+    ret.index = libsais16_bwt(data, resbwt, tmp, len, 0, NULL);
+    ret.str = resbwt;
+    return ret;
+}
+
 
 /*
 int main()

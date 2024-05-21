@@ -58,14 +58,26 @@ def BWT_c(__data):
     res = lib.BWT(c_data, len(__data))
     return res.str, res.index
 
+def FastBWT_c(__data):
+    lib = CDLL("./bwtlib.so")
+    c_data = (c_uint16 * len(__data))()
+    c_data[:] = [ord(i) for i in __data]
+    lib.FastBWT.restype = bwt
+    res = lib.FastBWT(c_data, len(__data))
+    dlen = len(__data)
+    #return res.str, res.index
+    #return "".join([res.str[i] for i in range(dlen)]), res.index
+    return res.str[:dlen], res.index
+
 def inverse_BWT_c(__data, __ind):
     lib = CDLL("./bwtlib.so")
     c_data = (c_uint16 * len(__data))()
     c_data[:] = [ord(i) for i in __data]
     c_ind = c_int(__ind)
-    lib.UNBWT.restype = c_wchar_p
+    lib.UNBWT.restype = POINTER(c_uint16)
     res = lib.UNBWT(c_data, len(__data), c_ind)
-    return res
+    dlen = len(__data)
+    return "".join([chr(res[i]) for i in range(dlen)])
 
 def MakeSuffixArray(__data):
     '''Создание суффиксного массива'''

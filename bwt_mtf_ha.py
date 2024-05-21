@@ -27,6 +27,13 @@ def BWT_MTF_HA_COMPRESS(__path: str, __newPath: str):
     with open(__path, 'r', encoding='utf-8') as f:
         data = f.read()
         f.close()
+    '''
+    with open('./texts/RawImage.bin', 'rb') as f:
+        data = f.read()
+        f.close()
+    data = "".join([chr(c) for c in data])
+    print(len(data))
+    '''
     d = [chr(c) for c in range(0, 65535)]
     i = 0
     new_data = ''
@@ -122,20 +129,36 @@ def BWT_MTF_HA_DECOMPRESS(__path: str):
 
     n = 0
     decoded = ''
+    print(old_len)
+    print(len(new_data))
     for i in range(0, old_len, LENGTH_OF_RUN):
         s = new_data[i:i+LENGTH_OF_RUN]
+        print(len(s))
         s = mtf.mtf_decode(s, d.copy())
+        print(len(s))
         #s = bwt.inverse_BWT(s, inds[n])
         s = bwt.inverse_BWT_c(s, inds[n])
+        print("after bwt", len(s))
         n += 1
         decoded += s
         print(i)
 
     return decoded
+'''
+from PIL import Image
+import numpy as np
+img = np.asarray(Image.open('./images/cat03.jpg'))
+s = b''
+for i in range(len(img)):
+    for j in range(len(img[0])):
+        s += bytes([img[i][j][0], img[i][j][1], img[i][j][2]])
 
+print(s[:50])
 
-
-
+with open('./texts/RawImage.bin', 'wb') as f:
+    f.write(s)
+    f.close()
+'''
 
 def BWT_MTF_HA_COMPRESS_ver2(__path: str, __newPath: str):
     with open(__path, 'r', encoding='utf-8') as f:

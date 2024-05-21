@@ -1,6 +1,8 @@
 from huffman_c import get_probs
 
-from decimal import Decimal
+from decimal import *
+
+BLOCK_SIZE = 125
 
 class ArithmeticEncoding:
     """
@@ -12,10 +14,10 @@ class ArithmeticEncoding:
         frequency_table: Frequency table as a dictionary where key is the symbol and value is the frequency.
         save_stages: If True, then the intervals of each stage are saved in a list. Note that setting save_stages=True may cause memory overflow if the message is large
         """
-        
-        self.save_stages = save_stages
-        if(save_stages == True):
-            print("WARNING: Setting save_stages=True may cause memory overflow if the message is large.")
+        if save_stages:
+            self.save_stages = True
+        else:
+            self.save_stages = False
 
         self.probability_table = self.get_probability_table(frequency_table)
 
@@ -89,7 +91,7 @@ class ArithmeticEncoding:
         msg = list(msg)
 
         encoder = []
-        
+        getcontext().prec = 250
         stage_min = Decimal(0.0)
         stage_max = Decimal(1.0)
 
@@ -126,7 +128,7 @@ class ArithmeticEncoding:
         decoder = []
 
         decoded_msg = []
-
+        getcontext().prec = 250
         stage_min = Decimal(0.0)
         stage_max = Decimal(1.0)
 
@@ -157,17 +159,90 @@ def AE_compress(__data: str, __freq: dict):
     
     encoder = ArithmeticEncoding(__freq)
     pr = ArithmeticEncoding.get_probability_table(encoder, __freq)
-    enc = ArithmeticEncoding.encode(encoder, s, pr)
-    dec = encoder.decode(enc[0], len(s), pr)
-    print("".join(dec[0]), end="")
-    return enc[0]
+    encoded = []
+    for i in range(0, len(s), BLOCK_SIZE):
+        print(i)
+        enc = ArithmeticEncoding.encode(encoder, s[i:i+BLOCK_SIZE], pr)
+        encoded.append(enc[0])
+    '''
+    ret = []
+    for i in encoded:
+        ret.append((100 - len(bin(int('1' + str(i)[2:])))) * '0' + bin(int('1' + str(i)[2:]))[2:])
+        #j = (100 - len(bin(int('1' + str(i)[2:])))) * '0' + bin(int('1' + str(i)[2:]))[2:]
+        #print(i,  Decimal('0.' + str(int(j, 2))[1:]) if (i == Decimal('0.' + str(int(j, 2))[1:])) == False else '')
+        
+    return ret
+    '''
+    s = ''
+    encoder = ArithmeticEncoding(__freq)
+    pr = ArithmeticEncoding.get_probability_table(encoder, __freq)
+    for i in range(len(encoded)):
+        #print(encoded[i])
+        dec = encoder.decode(encoded[i], BLOCK_SIZE, pr)
+        #print(len(bin(int(str(encoded[i])[2:]))))
+        print("".join(dec[0]), end="")
+        s += "".join(dec[0])
+    return s
+
+def AE_decompress(__data: str, __freq: dict):
+    encoded = [Decimal('0.' + str(int(i, 2))[1:]) for i in __data]
+    '''
+    for i in range(0, len(__data)//95, 95):
+        encoded.append(Decimal('0.' + str(int(__data[i:i+95], 2))))
+    '''
+    encoder = ArithmeticEncoding(__freq)
+    pr = ArithmeticEncoding.get_probability_table(encoder, __freq)
+    for i in range(len(encoded)):
+        dec = encoder.decode(encoded[i], BLOCK_SIZE, pr)
+        #print(len(bin(int(str(encoded[i])[2:]))))
+        print("".join(dec[0]), end="")
 
 with open('./texts/test.txt', 'r', encoding='utf-8') as f:
     data = f.read()
     f.close()
 
 
-print(data[:8])
+'''
 probs, chars = get_probs(data, None)
 freq = {chars[i]: probs[i] for i in range(len(chars))}
 
+#print(AE_compress(data[:1000], freq))
+a = AE_compress(data[:20000], freq)
+if a[:len(data[:20000])] == data[:20000]:
+    print("\nOK")
+#print(len(a))
+#AE_decompress(a, freq)
+'''
+from ctypes import CDLL, c_wchar_p, POINTER, Structure, c_int, c_wchar, addressof, c_uint32, c_ubyte, c_char
+
+BLOCK_SIZE = 4
+
+def IntArithmeticEncoding(__data: str):
+    lib = CDLL('./arithmetic.so')
+    lib.ArithmeticEncoding.restype = c_uint32
+    __data = __data.encode('utf-8')
+    c_data = (c_ubyte * len(__data))()
+    c_data[:] = __data
+    lib.InitModel(c_data, len(__data))
+    dic = list(set(__data))
+    c_dic = (c_ubyte * len(dic))()
+    c_dic[:] = dic
+    nums = []
+    for i in range(0, len(__data), BLOCK_SIZE):
+        c_data = (c_ubyte * len(__data[i:i+BLOCK_SIZE]))()
+        c_data[:] = __data[i:i+BLOCK_SIZE]
+        nums.append(lib.ArithmeticEncoding(c_data, BLOCK_SIZE))
+    #nums = [lib.ArithmeticEncoding(c_data[i:i+5], 5) for i in range(0,len(__data), 5)]
+    res = []
+    lib.ArithmeticDecoding.restype = POINTER(c_ubyte)
+    for i in nums:
+        arr = lib.ArithmeticDecoding(i, c_dic, BLOCK_SIZE)
+        res += bytes(arr[:BLOCK_SIZE])
+
+    return bytes(res).decode('utf-8'), nums
+
+#data = 'hello world'
+new_data, nums = IntArithmeticEncoding(data)
+
+if new_data == data:
+    print("OK")

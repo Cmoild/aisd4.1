@@ -1,6 +1,7 @@
 gcc -fPIC -shared -O3 -o mylib.so mylib.c
 gcc -fPIC -shared -o huffmanlib.so huffmanlib.c
 gcc -fPIC -shared -O3 -o bwtlib.so bwtlib.c
+gcc -fPIC -shared -O3 -o arithmetic.so arithmetic.c
 gcc mylib.c -o mylib.exe
 
 gcc -shared -O3 -o bwtlib.so bwtlib.o libsais16.o

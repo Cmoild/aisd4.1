@@ -6,7 +6,9 @@ def run_length_encoding(string):
     encoded_string = ''
     count = 1
     flag = chr(65535)
-    for i in range(1, len(string)):
+    strlen = len(string)
+    for i in range(1, strlen):
+        if (i % 50000 == 0): print(i)
         if string[i] == string[i-1]:
             count += 1
         else:
@@ -21,6 +23,23 @@ def run_length_encoding(string):
         encoded_string += flag + chr(count) + string[len(string)-1]
 
     return encoded_string
+
+def run_length_decoding(string):
+    decoded_string = ''
+    flag = chr(65535)
+    i = 0
+    strlen = len(string)
+    for i in range(strlen):
+        if (i % 50000 == 0): print(i)
+        if i >= 1 and (string[i-1] == flag or string[i-2] == flag):
+            continue
+        if string[i] == flag:
+            decoded_string += (ord(string[i+1])) * string[i+2]
+            #i += 2
+        else:
+            decoded_string += string[i]
+            #i += 1
+    return decoded_string
 
 # преобразование картинки в собственный формат
 
@@ -241,3 +260,5 @@ def RLE_IMAGE_DEMO():
     MakeRawRGBImage('./images/istockphoto-1337005456-612x612.jpg', 1)
     CompressWBImage()
     ShowCompressed(321, 612,1)
+
+

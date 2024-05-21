@@ -104,3 +104,21 @@ def count_substrings_with_duplicates(input_string):
 
     return mid_len, formula
 
+def ShowImageFromBin(decoded: str):
+    import numpy as np
+    with open('./texts/RawImage.bin', 'rb') as f:
+        data = f.read()
+        f.close()
+    data = "".join([chr(c) for c in data])
+    print(data[len(data)-100:len(data)])
+    decoded = bytes([ord(x) for x in decoded])
+    print("".join([chr(c) for c in decoded])[len(decoded)-100:len(decoded)])
+    from PIL import Image
+    print(len(decoded))
+    arr = [[decoded[i], decoded[i+1], decoded[i+2]] for i in range(0, len(data), 3)]
+    print(len(arr))
+    arr = [arr[i:i+612] for i in range(0, len(arr), 612)]
+    print(len(arr))
+    img = np.array(arr)
+    img = Image.fromarray(np.uint8(img))
+    img.show()

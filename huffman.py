@@ -61,3 +61,62 @@ def CanonicalHuffmanCodes(codes: list):
         ret[i].append('')
         ret[i][2] = bin(num)[2:] + (ret[i][1] - len(bin(num)[2:])) * '0'
     return ret
+
+import huffman_c
+import lz77_huffman
+
+def Huffman_COMPRESSOR(__path:str, __newPath:str):
+    with open(__path, 'r', encoding='utf-8') as f:
+        data = f.read()
+        f.close()
+    d = [chr(c) for c in range(0, 65535)]
+    codes = huffman_c.huffman_encode(data, d.copy())
+    huffman_c.free_codes()
+    new_data = huffman_c.get_encoded(data, codes)
+    num_of_codes = (14 - len(bin(len(codes))[2:])) * '0' + bin(len(codes))[2:]
+    codes_in_binary = ''.join([(16 - len(bin(ord(c[0]))[2:])) * '0' + bin(ord(c[0]))[2:] + (6 - len(bin(len(c[2]))[2:])) * '0' + bin(len(c[2]))[2:] + c[2] for c in codes])
+    old_len = (32 - len(bin(len(data))[2:])) * '0' + bin(len(data))[2:]
+    new_data = num_of_codes + codes_in_binary + old_len + new_data
+    lz77_huffman.binaryDataToFile(new_data, __newPath)
+
+#Huffman_COMPRESSOR('./texts/test.txt', './compressed/testh.bin')
+
+def Huffman_DECOMPRESS(__path: str):
+    d = [chr(c) for c in range(0, 65535)]
+    data = lz77_huffman.binaryDataFromFile(__path)
+    i = 0
+    num_of_codes = int(data[i:i+14], 2)
+    i += 14
+    codes = {}
+    for j in range(num_of_codes):
+        codes[data[i+22:i+22+int(data[i+16:i+22], 2)]] = chr(int(data[i:i+16], 2))
+        i += 22 + int(data[i+16:i+22], 2)
+    print(num_of_codes)
+    old_len = int(data[i:i+32],2)
+    i += 32
+    data = data[i:]
+    i = 0
+    n = 0
+    new_data = ''
+    print("Decoding")
+    while n < old_len:
+        j = 1
+        char = ''
+        while True:
+            #print(j)
+            if (data[i:i+j] in codes.keys()):
+                char = codes[data[i:i+j]]
+                #print(char)
+                break
+            else:
+                j += 1
+        i += j
+        n += 1
+        if (n % 50000 == 0):
+            print(n)
+        new_data += char
+
+    n = 0
+    return new_data
+
+
