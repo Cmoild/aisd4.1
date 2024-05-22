@@ -19,6 +19,10 @@ typedef struct prob {
 
 static prob model[uchar_MAX];
 
+prob* PopulateModel(){
+    return model;
+}
+
 int* get_freqs_and_chars(uchar* str, int len) {
     int* frequencies = (int*)calloc(uchar_MAX, sizeof(int));
     
@@ -28,6 +32,16 @@ int* get_freqs_and_chars(uchar* str, int len) {
 
     for (int i = 0; i < uchar_MAX; i++) {
         if (frequencies[i] != 0) frequencies[i] = MAX((int)((float)frequencies[i]/len), 1);
+    }
+
+    return frequencies;
+}
+
+int* get_freqs(uchar* str, int len) {
+    int* frequencies = (int*)calloc(uchar_MAX, sizeof(int));
+    
+    for (int i = 0; i < len; i++) {
+        frequencies[str[i]]++;
     }
 
     return frequencies;

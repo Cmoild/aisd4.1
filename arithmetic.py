@@ -197,10 +197,6 @@ def AE_decompress(__data: str, __freq: dict):
         #print(len(bin(int(str(encoded[i])[2:]))))
         print("".join(dec[0]), end="")
 
-with open('./texts/test.txt', 'r', encoding='utf-8') as f:
-    data = f.read()
-    f.close()
-
 
 '''
 probs, chars = get_probs(data, None)
@@ -215,34 +211,127 @@ if a[:len(data[:20000])] == data[:20000]:
 '''
 from ctypes import CDLL, c_wchar_p, POINTER, Structure, c_int, c_wchar, addressof, c_uint32, c_ubyte, c_char
 
+class prob(Structure):
+    _fields_ = [
+        ('lower', c_uint32),
+        ('upper', c_uint32),
+        ('denominator', c_uint32),
+        ('character', c_ubyte)
+    ]
+
 BLOCK_SIZE = 4
 
-def IntArithmeticEncoding(__data: str):
+def GetModel():
     lib = CDLL('./arithmetic.so')
-    lib.ArithmeticEncoding.restype = c_uint32
-    __data = __data.encode('utf-8')
-    c_data = (c_ubyte * len(__data))()
-    c_data[:] = __data
-    lib.InitModel(c_data, len(__data))
-    dic = list(set(__data))
-    c_dic = (c_ubyte * len(dic))()
-    c_dic[:] = dic
-    nums = []
-    for i in range(0, len(__data), BLOCK_SIZE):
-        c_data = (c_ubyte * len(__data[i:i+BLOCK_SIZE]))()
-        c_data[:] = __data[i:i+BLOCK_SIZE]
-        nums.append(lib.ArithmeticEncoding(c_data, BLOCK_SIZE))
-    #nums = [lib.ArithmeticEncoding(c_data[i:i+5], 5) for i in range(0,len(__data), 5)]
+    lib.PopulateModel.restype = POINTER(prob)
+    model = lib.PopulateModel()
+    m = model[:256]
+    return [(i.lower, i.upper, i.denominator, chr(i.character)) for i in m if i.character != 0] 
+
+
+def AEdecodeNumbers(nums: list, dict: list):
     res = []
+    c_dic = (c_ubyte * len(dict))()
+    c_dic[:] = dict
+    #print(dict)
+    lib = CDLL('./arithmetic.so')
     lib.ArithmeticDecoding.restype = POINTER(c_ubyte)
     for i in nums:
         arr = lib.ArithmeticDecoding(i, c_dic, BLOCK_SIZE)
         res += bytes(arr[:BLOCK_SIZE])
-
     return bytes(res).decode('utf-8'), nums
 
+def IntArithmeticEncoding(__data: str):
+    lib = CDLL('./arithmetic.so')
+    lib.ArithmeticEncoding.restype = c_uint32
+    lib.get_freqs.restype = POINTER(c_int)
+    __data = __data.encode('utf-8')
+    c_data = (c_ubyte * len(__data))()
+    c_data[:] = __data
+    lib.InitModel(c_data, len(__data))
+    #print(GetModel())
+    dic = list(set(__data))
+    #print(dic)
+    nums = []
+    freqs = lib.get_freqs(c_data, len(__data))[:256]
+    for i in range(0, len(__data), BLOCK_SIZE):
+        c_data = (c_ubyte * len(__data[i:i+BLOCK_SIZE]))()
+        c_data[:] = __data[i:i+BLOCK_SIZE]
+        nums.append(lib.ArithmeticEncoding(c_data, BLOCK_SIZE))
+    return nums, dic, freqs
+
+def GetEncodedIntsInBytes(nums: list):
+    return b''.join([i.to_bytes(4, 'big') for i in nums])
+
+def GetNumsFromBytes(byt: bytes):
+    return [int.from_bytes(byt[i:i+4], 'big') for i in range(0, len(byt), 4)]
+
+def GetCompressedBytes(__data: str):
+    nums, dic, freqs = IntArithmeticEncoding(__data)
+    bytenums = GetEncodedIntsInBytes(nums)
+    #print(freqs)
+    new_data = b''.join([bytes([i]) + freqs[i].to_bytes(4, 'big') for i in dic])
+    #print(new_data)
+    #print(len(b''.join([bytes([i]) * freqs[i] for i in dic])))
+    #print(len(dic))
+    new_data = len(dic).to_bytes(1, 'big') + len(nums).to_bytes(4, 'big') + new_data + bytenums
+    return new_data
+
+def GetOriginalFromBytes(__data: bytes):
+    #numOfChars = int.from_bytes(__data[0], 'big')
+    numOfChars = __data[0]
+    #print(numOfChars)
+    numOfNums = int.from_bytes(__data[1:5], 'big')
+    __data = __data[5:]
+    old_data = b''.join([int.from_bytes(__data[i+1:i+5], 'big') * bytes([__data[i]]) for i in range(0, numOfChars*5, 5)])
+    #print([int.from_bytes(__data[i+1:i+5], 'big') for i in range(0, numOfChars*5, 5)])
+    #print(len(old_data))
+    dic = [__data[i] for i in range(0, numOfChars*5, 5)]
+    __data = __data[5*numOfChars:]
+    lib = CDLL('./arithmetic.so')
+    c_data = (c_ubyte * len(old_data))()
+    c_data[:] = old_data
+    lib.InitModel(c_data, len(old_data))
+    #print(GetModel())
+    nums = GetNumsFromBytes(__data)
+    orig, _ = AEdecodeNumbers(nums, dic)
+    return orig
+
+def AEint_COMPRESS(__path:str, __newPath:str):
+    with open(__path, 'r', encoding='utf-8') as f:
+        data = f.read()
+        f.close()
+    b = GetCompressedBytes(data)
+    
+    with open(__newPath, 'wb') as f:
+        f.write(b)
+        f.close()
+
+def AEint_DECOMPRESS(__path:str):
+    with open(__path, 'rb') as f:
+        data = f.read()
+        f.close()
+    new_data = GetOriginalFromBytes(data)
+    return new_data
+
+
 #data = 'hello world'
-new_data, nums = IntArithmeticEncoding(data)
+#new_data, nums = IntArithmeticEncoding(data)
+#b = GetEncodedIntsInBytes(nums)
+#new_nums = GetNumsFromBytes(b)
+#b = GetCompressedBytes(data)
+#print(b)
+#new_data = GetOriginalFromBytes(b)
+'''
+with open('./texts/test.txt', 'r', encoding='utf-8') as f:
+    data = f.read()
+    f.close()
+
+print(len(data.encode('utf-8')))
+AEint_COMPRESS('./texts/test.txt', './compressed/testae.bin')
+new_data = AEint_DECOMPRESS('./compressed/testae.bin')
+
 
 if new_data == data:
     print("OK")
+'''

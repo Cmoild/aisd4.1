@@ -5,7 +5,7 @@ import numpy as np
 def run_length_encoding(string):
     encoded_string = ''
     count = 1
-    flag = chr(65535)
+    flag = chr(65534)
     strlen = len(string)
     for i in range(1, strlen):
         if (i % 50000 == 0): print(i)
@@ -26,7 +26,7 @@ def run_length_encoding(string):
 
 def run_length_decoding(string):
     decoded_string = ''
-    flag = chr(65535)
+    flag = chr(65534)
     i = 0
     strlen = len(string)
     for i in range(strlen):

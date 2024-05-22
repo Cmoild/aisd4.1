@@ -11,7 +11,7 @@ def BWT_RLE_COMPRESSOR(__path:str, __newPath:str):
     data = data.encode('utf-8')
 
     data = ind.to_bytes(4, 'big') + data
-
+    print(data)
     with open(__newPath, 'wb') as f:
         f.write(data)
         f.close()
