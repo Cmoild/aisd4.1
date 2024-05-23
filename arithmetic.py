@@ -226,7 +226,7 @@ def GetModel():
     lib.PopulateModel.restype = POINTER(prob)
     model = lib.PopulateModel()
     m = model[:256]
-    return [(i.lower, i.upper, i.denominator, chr(i.character)) for i in m if i.character != 0] 
+    return [(i.lower, i.upper, i.denominator, chr(i.character)) for i in m if i.denominator != 0] 
 
 
 def AEdecodeNumbers(nums: list, dict: list):
@@ -237,8 +237,9 @@ def AEdecodeNumbers(nums: list, dict: list):
     lib = CDLL('./arithmetic.so')
     lib.ArithmeticDecoding.restype = POINTER(c_ubyte)
     for i in nums:
-        arr = lib.ArithmeticDecoding(i, c_dic, BLOCK_SIZE)
+        arr = lib.ArithmeticDecoding(i, c_dic, BLOCK_SIZE, len(dict))
         res += bytes(arr[:BLOCK_SIZE])
+
     return bytes(res).decode('utf-8'), nums
 
 def IntArithmeticEncoding(__data: str):
@@ -246,6 +247,25 @@ def IntArithmeticEncoding(__data: str):
     lib.ArithmeticEncoding.restype = c_uint32
     lib.get_freqs.restype = POINTER(c_int)
     __data = __data.encode('utf-8')
+    c_data = (c_ubyte * len(__data))()
+    c_data[:] = __data
+    lib.InitModel(c_data, len(__data))
+    #print(GetModel())
+    dic = list(set(__data))
+    #print(dic)
+    nums = []
+    freqs = lib.get_freqs(c_data, len(__data))[:256]
+    for i in range(0, len(__data), BLOCK_SIZE):
+        c_data = (c_ubyte * len(__data[i:i+BLOCK_SIZE]))()
+        c_data[:] = __data[i:i+BLOCK_SIZE]
+        nums.append(lib.ArithmeticEncoding(c_data, BLOCK_SIZE))
+
+    return nums, dic, freqs
+
+def IntArithmeticEncodingBYTES(__data:bytes):
+    lib = CDLL('./arithmetic.so')
+    lib.ArithmeticEncoding.restype = c_uint32
+    lib.get_freqs.restype = POINTER(c_int)
     c_data = (c_ubyte * len(__data))()
     c_data[:] = __data
     lib.InitModel(c_data, len(__data))
@@ -294,6 +314,7 @@ def GetOriginalFromBytes(__data: bytes):
     lib.InitModel(c_data, len(old_data))
     #print(GetModel())
     nums = GetNumsFromBytes(__data)
+
     orig, _ = AEdecodeNumbers(nums, dic)
     return orig
 
@@ -311,6 +332,7 @@ def AEint_DECOMPRESS(__path:str):
     with open(__path, 'rb') as f:
         data = f.read()
         f.close()
+
     new_data = GetOriginalFromBytes(data)
     return new_data
 

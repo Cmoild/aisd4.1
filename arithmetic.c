@@ -111,23 +111,25 @@ unsigned ArithmeticEncoding(uchar* input, int len) {
     return low;
 }
 
-uchar* ArithmeticDecoding(unsigned low, uchar dictionary[], int len) {
+uchar* ArithmeticDecoding(unsigned low, uchar dictionary[], int len, int dictionaryLen) {
     unsigned highd = 0xFFFFFFFFU;
     unsigned lowd = 0;
     uchar* input;
     uchar* output = (uchar*)malloc(len * sizeof(uchar) + 1);
+    //printf("C output:");
     output[len] = '\0';
     for (int i = 0; i < len; i++) {
         unsigned range = highd - lowd;
         //printf("%d %d\n", highd, lowd);
         input = dictionary;
-        for (uchar c = *input; c != '\0'; c = *++input ) {
+        for (int j = 0; j < dictionaryLen; j++) {
+            uchar c = input[j];
             prob p = getProbability(c);
             
             unsigned highdec = (unsigned)((float)range * ((float)p.upper/p.denominator));
             unsigned lowdec = (unsigned)((float)range * ((float)p.lower/p.denominator));
             if (low >= lowd + lowdec && low < lowd + highdec) {
-                //printf("%c", c);
+                //printf("%d,", c);
                 output[i] = c;
                 highd = lowd + highdec;
                 lowd = lowd + lowdec;

@@ -10,6 +10,8 @@ import bwt_mtf_ha
 import bwt_rle
 import bwt_mtf_rle_ha
 import arithmetic
+import bwt_mtf_ac
+import bwt_mtf_rle_ac
 
 def LZ77_Huffman_DEMO():
     lz77_huffman.LZ77_Huffman_COMPRESS('./compressed/enwik8bmhNEW.bin', './compressed/enwik8bmhNEW.bin')
@@ -61,7 +63,7 @@ def BWT_MTF_HA_DEMO():
 
     bwt_mtf_ha.BWT_MTF_HA_COMPRESS('./texts/enwik7.txt', './compressed/enwik7bmh.bin')
     
-    return
+    
     decoded = bwt_mtf_ha.BWT_MTF_HA_DECOMPRESS('./compressed/enwik7bmh.bin')
     
     
@@ -120,7 +122,7 @@ def AE_DEMO():
         print("OK")
 
 def BWT_MTF_RLE_HA_DEMO():
-    bwt_mtf_rle_ha.BWT_MTF_RLE_HA_COMPRESS('./texts/test.txt', './compressed/testbmrh.bin')
+    bwt_mtf_rle_ha.BWT_MTF_RLE_HA_COMPRESS('./texts/tolstoy.txt', './compressed/testbmrh.bin')
     
     
     decoded = bwt_mtf_rle_ha.BWT_MTF_RLE_HA_DECOMPRESS('./compressed/testbmrh.bin')
@@ -130,7 +132,39 @@ def BWT_MTF_RLE_HA_DEMO():
         f.write(decoded)
         f.close()
     
-    with open('./texts/test.txt', 'r', encoding='utf-8') as f:
+    with open('./texts/tolstoy.txt', 'r', encoding='utf-8') as f:
+        orig = f.read()
+        f.close()
+    
+    if orig == decoded:
+        print("OK")
+
+def BWT_MTF_AC_DEMO():
+    bwt_mtf_ac.BWT_MTF_AC_COMPRESS('./texts/tolstoy.txt', './compressed/testbmtac.bin')
+    
+    decoded = bwt_mtf_ac.BWT_MTF_AC_DECOMPRESS('./compressed/testbmtac.bin')
+    
+    with open('./texts/testcpy.txt', 'w', encoding='utf-8') as f:
+        f.write(decoded)
+        f.close()
+    
+    with open('./texts/tolstoy.txt', 'r', encoding='utf-8') as f:
+        orig = f.read()
+        f.close()
+    
+    if orig == decoded:
+        print("OK")
+
+def BWT_MTF_RLE_AC_DEMO():
+    bwt_mtf_rle_ac.BWT_MTF_RLE_AC_COMPRESS('./texts/enwik7.txt', './compressed/testbmrac.bin')
+    
+    decoded = bwt_mtf_rle_ac.BWT_MTF_RLE_AC_DECOMPRESS('./compressed/testbmrac.bin')
+    
+    with open('./texts/testcpy.txt', 'w', encoding='utf-8') as f:
+        f.write(decoded)
+        f.close()
+    
+    with open('./texts/enwik7.txt', 'r', encoding='utf-8') as f:
         orig = f.read()
         f.close()
     
@@ -139,7 +173,7 @@ def BWT_MTF_RLE_HA_DEMO():
 
 def main():
     
-    BWT_MTF_RLE_HA_DEMO()
+    
     return
 
 if __name__ == '__main__':

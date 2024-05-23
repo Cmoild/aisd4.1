@@ -35,11 +35,13 @@ def BWT_MTF_RLE_HA_COMPRESS(__path: str, __newPath: str):
     data = "".join([chr(c) for c in data])
     print(len(data))
     '''
+    
     d = [chr(c) for c in range(0, 65535)]
     i = 0
     new_data = ''
     inds = []
     print(len(data))
+    
     while i < len(data):
         start1 = time()
         s = data[i:i + LENGTH_OF_RUN]
@@ -50,8 +52,11 @@ def BWT_MTF_RLE_HA_COMPRESS(__path: str, __newPath: str):
         #print(time() - start1)
         #print(i)
     
-    new_data = rle.run_length_encoding(new_data)
+    
     print([ord(i) for i in new_data[24830:24850]])
+    print(len(new_data[24830:24850]))
+    new_data = rle.run_length_encoding(new_data)
+    rle_len = len(new_data)
     print("Making huffman codes")
     codes = huffman_c.huffman_encode(new_data, d.copy())
     #print(codes)
@@ -64,7 +69,8 @@ def BWT_MTF_RLE_HA_COMPRESS(__path: str, __newPath: str):
     num_of_codes = (14 - len(bin(len(codes))[2:])) * '0' + bin(len(codes))[2:]
     codes_in_binary = ''.join([(16 - len(bin(ord(c[0]))[2:])) * '0' + bin(ord(c[0]))[2:] + (6 - len(bin(len(c[2]))[2:])) * '0' + bin(len(c[2]))[2:] + c[2] for c in codes])
     old_len = (32 - len(bin(len(data))[2:])) * '0' + bin(len(data))[2:]
-    new_data = num_of_inds + inds_in_binary + num_of_codes + codes_in_binary + old_len + new_data
+    rle_len = (32 - len(bin(rle_len)[2:]))*'0' + bin(rle_len)[2:]
+    new_data = num_of_inds + inds_in_binary + num_of_codes + codes_in_binary + old_len+ rle_len + new_data
     print("Saving")
     
     lz77_huffman.binaryDataToFile(new_data, __newPath)
@@ -94,19 +100,22 @@ def BWT_MTF_RLE_HA_DECOMPRESS(__path: str):
     
     old_len = int(data[i:i+32],2)
     i += 32
+    rle_len = int(data[i:i+32],2)
+    i += 32
     data = data[i:]
     i = 0
     n = 0
     new_data = ''
     print("Decoding")
-    while n < old_len:
+    while n < rle_len:
         j = 1
         char = ''
         while True:
             #print(j)
             if (data[i:i+j] in codes.keys()):
                 char = codes[data[i:i+j]]
-                #print(char)
+                if n >= 24830 and n < 24850:
+                    print(ord(char), end=' ')
                 break
             else:
                 j += 1
@@ -115,7 +124,7 @@ def BWT_MTF_RLE_HA_DECOMPRESS(__path: str):
         if (n % 50000 == 0):
             print(n)
         new_data += char
-
+    
     n = 0
     decoded = ''
     print(old_len)
