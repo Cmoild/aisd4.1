@@ -147,19 +147,22 @@ def BWT_MTF_HA_DECOMPRESS(__path: str):
 '''
 from PIL import Image
 import numpy as np
-img = np.asarray(Image.open('./images/cat03.jpg'))
+img = np.asarray(Image.open('./images/wb.jpg'))
 s = b''
+print(img[:10])
 for i in range(len(img)):
-    for j in range(len(img[0])):
-        s += bytes([img[i][j][0], img[i][j][1], img[i][j][2]])
+    s += bytes(img[i])
+    for j in range(len(img)):
+        #s += bytes([img[i][j][0], img[i][j][1], img[i][j][2]])
+        break
 
 print(s[:50])
 
-with open('./texts/RawImage.bin', 'wb') as f:
+with open('./texts/RawImageWB.bin', 'wb') as f:
     f.write(s)
     f.close()
-'''
 
+'''
 def BWT_MTF_HA_COMPRESS_ver2(__path: str, __newPath: str):
     with open(__path, 'r', encoding='utf-8') as f:
         data = f.read()

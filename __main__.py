@@ -12,6 +12,7 @@ import bwt_mtf_rle_ha
 import arithmetic
 import bwt_mtf_ac
 import bwt_mtf_rle_ac
+import lz77_ac
 
 def LZ77_Huffman_DEMO():
     lz77_huffman.LZ77_Huffman_COMPRESS('./compressed/enwik8bmhNEW.bin', './compressed/enwik8bmhNEW.bin')
@@ -39,10 +40,10 @@ def LZ77_Huffman_DEMO():
         print("OK")
 
 def LZ77_DEMO():
-    lz77.LZ77_COMPRESS('./texts/enwik7.txt', 'C:/MyGames/enwik7lz.bin')
+    lz77.LZ77_COMPRESS('./texts/enwik7.txt', './compressed/testlz.bin')
     
-    decoded = lz77.LZ77_DECOMPRESS('C:/MyGames/enwik7lz.bin')
-    with open('./texts/enwik7cpy.txt', 'w', encoding='utf-8') as f:
+    decoded = lz77.LZ77_DECOMPRESS('./compressed/testlz.bin')
+    with open('./texts/testcpy.txt', 'w', encoding='utf-8') as f:
         f.write(decoded)
         f.close()
 
@@ -50,7 +51,7 @@ def LZ77_DEMO():
         orig = f.read()
         f.close()
     
-    with open('./texts/enwik7cpy.txt', 'r', encoding='utf-8') as f:
+    with open('./texts/testcpy.txt', 'r', encoding='utf-8') as f:
         copy = f.read()
         f.close()
 
@@ -165,6 +166,22 @@ def BWT_MTF_RLE_AC_DEMO():
         f.close()
     
     with open('./texts/enwik7.txt', 'r', encoding='utf-8') as f:
+        orig = f.read()
+        f.close()
+    
+    if orig == decoded:
+        print("OK")
+
+def LZ77_AC_DEMO():
+    lz77_ac.LZ77_AC_COMPRESS('./texts/tolstoy.txt', './compressed/testlz.bin')
+    
+    decoded = lz77_ac.LZ77_AC_DECOMPRESS('./compressed/testlz.bin')
+    
+    with open('./texts/testcpy.txt', 'w', encoding='utf-8') as f:
+        f.write(decoded)
+        f.close()
+    
+    with open('./texts/tolstoy.txt', 'r', encoding='utf-8') as f:
         orig = f.read()
         f.close()
     
